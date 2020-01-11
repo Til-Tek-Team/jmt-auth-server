@@ -1,18 +1,20 @@
 const userService = require('../services/user.service');
+const tokenService = require('../services/token.service');
 const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const CONSTANTS = require('../../constants.js');
 const { validateUser } = require('../_helpers/validators');
 const _ = require('lodash');
+const uuid4 = require('uuid/v4');
 
 function login(req, res, next){
     const {email, password} = req.body;
     if(!email || !password){
-        res.status(200).json({ success: false, error: 'incorrect request' });
+        res.status(200).json({ success: false, error: 'invalid request' });
         return;
     }
 
-    authenticateUser(email, password)
+    loginHandler(email, password)
         .then(user => res.status(200).json({success: true, user}))
         .catch(err => next(err));
 }
@@ -20,7 +22,7 @@ function login(req, res, next){
 function signUp(req, res, next){
     const user = req.body;
 
-    console.log(user);
+    // console.log(user);
     const valid = validateUser(user);
 
     if(!valid){
@@ -28,16 +30,117 @@ function signUp(req, res, next){
         return;
     }
 
-    createUser(user)
+    signUpHandler(user)
         .then(user => res.status(200).json({success: true, user}))
         .catch(err => next(err));
 }
 
+function verifyToken(req, res, next){
+    const token = req.body.token;
+    if(!token){
+        res.status(200).json({ success: false, error: 'invalid request' });
+        return;
+    }
+    verifyTokenHandler(token)
+        .then(user => res.status(200).json({success: true, user}))
+        .catch(err => next(err));
+}
 
-async function authenticateUser(email, password){
+function verifyEmail(req, res, next){
+    const token = req.body.token;
+    if(!token){
+        
+    }
+
+    verifyEmailHandler(token)
+        .then(user => res.status(200).json({success: true, user}))
+        .catch(err => next(err));
+}   
+
+function changePasswordRequest(req, res, next){
+    const userId = req.body.userId;
+    if(!userId){
+        res.status(200).json({ success: false, error: 'invalid request' });
+        return;
+    }
+
+    changePasswordRequestHundler(userId)
+        .then(changePasswordToken => res.status(200).json({success: true, changePasswordToken}))
+        .catch(err => next(err));
+}
+
+function changePassword(req, res, next){
+    let { password, confirmPassword, id } = req.body;
+    if(!password || !confirmPassword || !id){
+        res.status(200).json({ success: false, error: 'invalid request' });
+        return;
+    }
+
+    if(password !== confirmPassword){
+        res.status(200).json({ success: false, error: 'passwords should be the same' });
+        return;
+    }
+
+    changePasswordHandler(id, password)
+        .then(() => res.status(200).json({success: true}))
+        .catch(err => next(err));
+}
+
+function getUser(req, res, next){
+    let email = req.params.email;
+    if(!email){
+        return res.status(200).json({ success: false, error: 'invalid request' });
+    }
+
+    getUserHandler(email)
+        .then(user => res.status(200).json({success: true, user}))
+        .catch(err => next(err));
+}
+
+function socialSignup(req, res, next){
+    let {email, firstName, lastName, phoneNumber, socialId} = req.body;
+
+    if(!email || phoneNumber == undefined || !socialId){
+        return res.status(200).json({ success: false, error: 'invalid request' });
+    }
+
+    socialSignupHandler({email, firstName, lastName, phoneNumber, socialId})
+        .then(user => res.status(200).json({success: true, user}))
+        .catch(err => next(err));
+}
+
+function socialLogin(req, res, next){
+    let {email, socialId} = req.body;
+    if(!email || !socialId){
+        return res.status(200).json({ success: false, error: 'invalid request' });
+    }
+
+    socialLoginHandler(req.body)
+        .then(user => res.status(200).json({success: true, user}))
+        .catch(err => next(err));
+}
+
+function updatePassword(req, res, next){
+    let {id, oldPassword, newPassword} = req.body;
+
+    if(!id || !oldPassword || !newPassword){
+        return res.status(200).json({ success: false, error: 'invalid request' });
+    }
+
+    updatePasswordHandler(id, oldPassword, newPassword)
+        .then(success => res.status(200).json({success}))
+        .catch(err => next(err));
+}
+
+
+async function loginHandler(email, password){
     let user = await userService.getUserByEmail(email);
     if(!user){
         throw "email or password incorrect";
+    }
+
+    if(!user.emailVerified){
+        throw "verify your email first";
     }
 
     const pass = bcryptjs.compareSync(password, user.password);
@@ -45,29 +148,195 @@ async function authenticateUser(email, password){
         throw "email or password incorrect";
     }
 
-    if(pass){
-        const token = jwt.sign({ sub: user.id }, CONSTANTS.JWTSECRET, { expiresIn: '24h' });
-        let updatedUser = _.omit(user.dataValues, ["password"]);
-        updatedUser.token = token;
-        return updatedUser;
-    }
+    // const token = jwt.sign({ sub: user.id }, CONSTANTS.JWTSECRET, { expiresIn: '24hr' });
+    let updatedUser = _.omit(user.dataValues, ["password"]);
+    // updatedUser.token = token;
+    return updatedUser;
+
 }
 
-async function createUser(user){
+async function signUpHandler(user){
+    if(!await isEmailUnique(user.email)){
+        throw 'email is not unique';
+    }
     user.username = user.email;
     let createdUser = await userService.createUser(user);
+    const token = jwt.sign({ sub: createdUser.id }, CONSTANTS.JWTEMAILSECRET);
+    let createToken = await tokenService.createToken({token});
     
-    if(!createdUser){
-        throw "something went wrong.";
+    if(!createdUser || !createToken){
+        throw "something went wrong";
     }
     let updatedUser = _.omit(createdUser.dataValues, ["password"]);
 
+    return {...updatedUser, emailVerificationToken: token};
+}
+
+async function verifyTokenHandler(token){
+    try{
+        var decoded = jwt.verify(token, CONSTANTS.JWTSECRET);
+    }catch{
+        throw "invalid token";
+    }
+
+    return decoded;
+}
+
+async function verifyEmailHandler(token){
+
+    let retriveToken = await tokenService.getToken(token);
+
+    if(!retriveToken){
+        throw "invalid token";
+    }
+
+    try{
+        var decoded = jwt.verify(token, CONSTANTS.JWTEMAILSECRET);
+    }catch{
+        throw "invalid token";
+    }
+
+    let userId = decoded.sub;
+
+    let user = await userService.getUserById(userId);
+    if(!user){
+        throw "something went wrong";
+    }
+
+    let updatedUser = await  userService.updateUser(user, {emailVerified: true});
+    let updatedToken = tokenService.updateToken(retriveToken, {expired: true});
+
+    if(!updatedUser || !updatedToken){
+        throw "something went wrong";
+    }
+
+    updatedUser = _.omit(updatedUser.dataValues, ["password"]);
+
     return updatedUser;
+}
+
+async function changePasswordRequestHundler(userId){
+    const user = await userService.getUserById(userId);
+    if(!user){
+        throw "user does not exist";
+    }
+
+    if(!user.emailVerified){
+        throw "verify your email first";
+    }
+
+    const token = jwt.sign({ sub: userId }, CONSTANTS.JWTPASSWORDSECRET);
+
+    let createToken = await tokenService.createToken({token});
+    
+    if(!createToken){
+        throw "something went wrong";
+    }
+
+    return token;
+}
+
+async function changePasswordHandler(userId, password){
+
+    const user = await userService.getUserById(userId);
+
+    if(!user){
+        throw "user does not exist";
+    }
+
+    // if(!user.emailVerified){
+    //     throw "verify your email first";
+    // }
+
+    const updatedUser = await userService.updateUser(user, {password: bcryptjs.hashSync(password, 10), emailVerified: true})
+
+    if(!updatedUser){
+        throw "something went wrong";
+    }
+
+    return true;
+}
+
+async function getUserHandler(email){
+    const user = userService.getUserByEmail(email);
+
+    if(!user){
+        throw "user does not exist";
+    }
+
+    return user;
+}
+
+async function socialSignupHandler(user){
+    if(!await isEmailUnique(user.email)){
+
+        throw 'email is not unique';
+    }
+    user.username = user.email;
+    user.password = uuid4();
+
+    const createdUser = await userService.createUser({...user});
+    if(!createdUser){
+        return "something went wrong";
+    }
+
+    let updatedUser = _.omit(createdUser.dataValues, ["password"]);
+
+    return updatedUser;    
+}
+
+async function socialLoginHandler({email, socialId}){
+    const user = await userService.getUserByEmail(email);
+
+    if(!user || user.socialId != socialId){
+        throw "user is not found";
+    }
+
+    let updatedUser = _.omit(user.dataValues, ["password"]);
+
+    return updatedUser;
+}
+
+async function updatePasswordHandler(id, oldPassword, newPassword){
+    const user = await userService.getUserById(id);
+    if(!user){
+        throw "user is not found";
+    }
+    
+    const pass = bcryptjs.compareSync(oldPassword, user.password);
+
+    if(!pass){
+        throw "password incorrect";
+    }
+
+
+    const updatedUser = await userService.updateUser(user, {password: bcryptjs.hashSync(newPassword, 10)})
+    if(!updatedUser){
+        throw "something went wrong";
+    }
+
+    return true;
+}
+
+async function isEmailUnique(email) {
+    const foundEmail = await userService.getUserByEmail(email);
+    if (foundEmail) {
+        return false;
+    }
+    return true;
 }
 
 
 
 module.exports = {
     login,
-    signUp
+    signUp,
+    verifyToken,
+    verifyEmail,
+    changePasswordRequest,
+    changePassword,
+    getUser,
+    socialSignup,
+    socialLogin,
+    updatePassword
 }

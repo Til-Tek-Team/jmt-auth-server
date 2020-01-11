@@ -42,6 +42,10 @@ module.exports = function (sequelize, DataTypes) {
       allowNull: true,
       defaultValue: '0'
     },
+    socialId: {
+      type: DataTypes.STRING,
+      defaultValue: null
+    },
     createdAt: {
       type: DataTypes.DATE,
       allowNull: false

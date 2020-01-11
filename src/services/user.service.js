@@ -12,9 +12,14 @@ function getUserById(id){
     return User.findOne({where: { id }}).catch(err => console.log(err));
 }
 
+function updateUser(user, data){
+    return user.update(data);
+}
+
 
 module.exports = {
     createUser,
     getUserByEmail,
-    getUserById
+    getUserById,
+    updateUser
 }
