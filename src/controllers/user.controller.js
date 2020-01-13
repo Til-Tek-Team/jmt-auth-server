@@ -110,8 +110,8 @@ function socialSignup(req, res, next){
 }
 
 function socialLogin(req, res, next){
-    let {email, socialId} = req.body;
-    if(!email || !socialId){
+    let {email} = req.body;
+    if(!email){
         return res.status(200).json({ success: false, error: 'invalid request' });
     }
 
@@ -285,10 +285,10 @@ async function socialSignupHandler(user){
     return updatedUser;    
 }
 
-async function socialLoginHandler({email, socialId}){
+async function socialLoginHandler({email}){
     const user = await userService.getUserByEmail(email);
 
-    if(!user || user.socialId != socialId){
+    if(!user){
         throw "user is not found";
     }
 
