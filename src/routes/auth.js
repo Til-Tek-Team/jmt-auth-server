@@ -19,3 +19,5 @@ app.post('/verify_email', userController.verifyEmail);
 app.post('/change_password', userController.changePassword)
 
 app.post('/update_password', userController.updatePassword)
+
+app.get('/user/:email', userController.getUserByEmail)

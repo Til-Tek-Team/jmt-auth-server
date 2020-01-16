@@ -132,6 +132,18 @@ function updatePassword(req, res, next){
         .catch(err => next(err));
 }
 
+function getUserByEmail(req, res, next){
+    console.log("from get user by email");
+    let email = req.params.email;
+    if(!email){
+        return res.status(200).json({ success: false, error: 'invalid request' });
+    }
+
+    getUserByEmailHandler(email)
+        .then(user => res.status(200).json({success: true, user}))
+        .catch(err => next(err));
+}
+
 
 async function loginHandler(email, password){
     let user = await userService.getUserByEmail(email);
@@ -140,7 +152,7 @@ async function loginHandler(email, password){
     }
 
     if(!user.emailVerified){
-        throw "verify your email first";
+        throw "verify your email to proceed";
     }
 
     const pass = bcryptjs.compareSync(password, user.password);
@@ -222,7 +234,7 @@ async function changePasswordRequestHundler(userId){
     }
 
     if(!user.emailVerified){
-        throw "verify your email first";
+        throw "verify your email to proceed";
     }
 
     const token = jwt.sign({ sub: userId }, CONSTANTS.JWTPASSWORDSECRET);
@@ -245,7 +257,7 @@ async function changePasswordHandler(userId, password){
     }
 
     // if(!user.emailVerified){
-    //     throw "verify your email first";
+    //     throw "verify your email to proceed";
     // }
 
     const updatedUser = await userService.updateUser(user, {password: bcryptjs.hashSync(password, 10), emailVerified: true})
@@ -297,6 +309,15 @@ async function socialLoginHandler({email}){
     return updatedUser;
 }
 
+async function getUserByEmailHandler(email){
+    const user = await userService.getUserByEmail(email);
+    if(!user){
+        throw "user is not found";
+    }
+
+    return user;
+}
+
 async function updatePasswordHandler(id, oldPassword, newPassword){
     const user = await userService.getUserById(id);
     if(!user){
@@ -338,5 +359,6 @@ module.exports = {
     getUser,
     socialSignup,
     socialLogin,
-    updatePassword
+    updatePassword,
+    getUserByEmail
 }
