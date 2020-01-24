@@ -133,7 +133,7 @@ function updatePassword(req, res, next){
 }
 
 function getUserByEmail(req, res, next){
-    console.log("from get user by email");
+    // console.log("from get user by email");
     let email = req.params.email;
     if(!email){
         return res.status(200).json({ success: false, error: 'invalid request' });
@@ -141,6 +141,19 @@ function getUserByEmail(req, res, next){
 
     getUserByEmailHandler(email)
         .then(user => res.status(200).json({success: true, user}))
+        .catch(err => next(err));
+}
+
+function setPassword(req, res, next){
+    // console.log(req.body);
+    let {email, password} = req.body;
+
+    if(!email || !password){
+        return res.status(200).json({ success: false, error: 'invalid request' });
+    }
+
+    setPasswordHandler(email, password)
+        .then(success => res.status(200).json({success}))
         .catch(err => next(err));
 }
 
@@ -347,6 +360,21 @@ async function isEmailUnique(email) {
     return true;
 }
 
+async function setPasswordHandler(email, password){
+    // console.log(email, password);
+    const user = await userService.getUserByEmail(email);
+    if(!user){
+        throw "user is not found";
+    }
+
+    const updatedUser = await userService.updateUser(user, {password: bcryptjs.hashSync(password, 10)})
+    if(!updatedUser){
+        throw "something went wrong";
+    }
+
+    return true;
+}
+
 
 
 module.exports = {
@@ -360,5 +388,6 @@ module.exports = {
     socialSignup,
     socialLogin,
     updatePassword,
-    getUserByEmail
+    getUserByEmail,
+    setPassword
 }

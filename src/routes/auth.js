@@ -16,7 +16,9 @@ app.post('/verify_email', userController.verifyEmail);
 
 // app.post('/change_password_request', userController.changePasswordRequest);
 
-app.post('/change_password', userController.changePassword)
+app.post('/change_password', userController.changePassword);
+
+app.post('/set_password', userController.setPassword);
 
 app.post('/update_password', userController.updatePassword)
 
