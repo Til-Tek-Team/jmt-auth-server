@@ -11,6 +11,26 @@ module.exports = function(sequelize, DataTypes) {
         primaryKey: true,
         type: DataTypes.INTEGER
       },
+      role: {
+        type: DataTypes.STRING,
+        allowNull: false
+      },
+      ApplicationId: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        references: {
+          model: "applications",
+          key: "applicationId"
+        }
+      },
+      UserId: {
+        type: DataTypes.CHAR(36),
+        allowNull: true,
+        references: {
+          model: "users",
+          key: "id"
+        }
+      },
       createdAt: {
         allowNull: false,
         type: DataTypes.DATE
