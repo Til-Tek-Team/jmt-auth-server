@@ -101,13 +101,35 @@ function getUser(req, res, next) {
 }
 
 function socialSignup(req, res, next) {
-  let { email, firstName, lastName, phoneNumber, socialId } = req.body;
+  let {
+    email,
+    firstName,
+    lastName,
+    phoneNumber,
+    socialId,
+    APPLICATION,
+    role
+  } = req.body;
 
-  if (!email || phoneNumber == undefined || !socialId) {
+  if (
+    !email ||
+    phoneNumber == undefined ||
+    !socialId ||
+    !APPLICATION ||
+    !role
+  ) {
     return res.status(200).json({ success: false, error: "invalid request" });
   }
 
-  socialSignupHandler({ email, firstName, lastName, phoneNumber, socialId })
+  socialSignupHandler({
+    email,
+    firstName,
+    lastName,
+    phoneNumber,
+    socialId,
+    APPLICATION,
+    role
+  })
     .then(user => res.status(200).json({ success: true, user }))
     .catch(err => next(err));
 }
@@ -327,6 +349,18 @@ async function socialSignupHandler(user) {
   const createdUser = await userService.createUser({ ...user });
   if (!createdUser) {
     return "something went wrong";
+  }
+
+  if (user.APPLICATION == "TRABAHANAP") {
+    const applicationUser = await userService.addApplicationUser(
+      createdUser.id,
+      "TRABAHANAP",
+      user.role
+    );
+
+    if (!applicationUser) {
+      throw "something went wrong";
+    }
   }
 
   let updatedUser = _.omit(createdUser.dataValues, ["password"]);
