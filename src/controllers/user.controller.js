@@ -218,7 +218,7 @@ async function loginHandler(email, password) {
 
 async function signUpHandler(user) {
   if (!(await isEmailUnique(user.email))) {
-    throw "email is not unique";
+    throw "Email is already in use";
   }
   user.username = user.email;
   let createdUser = await userService.createUser(user);
@@ -341,7 +341,7 @@ async function getUserHandler(email) {
 
 async function socialSignupHandler(user) {
   if (!(await isEmailUnique(user.email))) {
-    throw "email is not unique";
+    throw "Email is already in use";
   }
   user.username = user.email;
   user.password = uuid4();
