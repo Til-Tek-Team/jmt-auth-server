@@ -2,45 +2,24 @@
 
 module.exports = function(sequelize, DataTypes) {
   return sequelize.define(
-    "users",
+    "companies",
     {
       id: {
         type: DataTypes.CHAR(36),
         allowNull: false,
         primaryKey: true
       },
-      username: {
+      companyName: {
         type: DataTypes.STRING(255),
         allowNull: false
       },
-      phoneNumber: {
+      address: {
         type: DataTypes.STRING(255),
         allowNull: false
       },
-      password: {
+      industryType: {
         type: DataTypes.STRING(255),
         allowNull: true
-      },
-      email: {
-        type: DataTypes.STRING(255),
-        allowNull: false
-      },
-      firstName: {
-        type: DataTypes.STRING(255),
-        allowNull: true
-      },
-      lastName: {
-        type: DataTypes.STRING(255),
-        allowNull: true
-      },
-      lastLoggedIn: {
-        type: DataTypes.DATE,
-        allowNull: true
-      },
-      emailVerified: {
-        type: DataTypes.INTEGER(1),
-        allowNull: true,
-        defaultValue: "0"
       },
       createdAt: {
         type: DataTypes.DATE,
@@ -50,13 +29,17 @@ module.exports = function(sequelize, DataTypes) {
         type: DataTypes.DATE,
         allowNull: false
       },
-      socialId: {
+      ApplicationId: {
         type: DataTypes.STRING(255),
-        allowNull: true
+        allowNull: true,
+        references: {
+          model: "applications",
+          key: "applicationId"
+        }
       }
     },
     {
-      tableName: "users"
+      tableName: "companies"
     }
   );
 };

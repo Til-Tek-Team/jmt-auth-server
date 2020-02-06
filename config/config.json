@@ -1,9 +1,9 @@
 {
   "development": {
     "username": "root",
-    "password": null,
-    "database": "auth_server_development",
-    "host": "127.0.0.1",
+    "password": "password",
+    "database": "auth_server_payment",
+    "host": "192.168.0.10",
     "dialect": "mysql",
     "operatorsAliases": false
   },

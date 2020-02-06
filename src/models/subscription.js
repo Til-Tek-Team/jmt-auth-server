@@ -2,45 +2,36 @@
 
 module.exports = function(sequelize, DataTypes) {
   return sequelize.define(
-    "users",
+    "subscriptions",
     {
       id: {
         type: DataTypes.CHAR(36),
         allowNull: false,
         primaryKey: true
       },
-      username: {
+      type: {
         type: DataTypes.STRING(255),
         allowNull: false
       },
-      phoneNumber: {
-        type: DataTypes.STRING(255),
-        allowNull: false
+      points: {
+        type: DataTypes.INTEGER(11),
+        allowNull: true
       },
-      password: {
+      premiumType: {
         type: DataTypes.STRING(255),
         allowNull: true
       },
-      email: {
-        type: DataTypes.STRING(255),
-        allowNull: false
-      },
-      firstName: {
+      expressExpress: {
         type: DataTypes.STRING(255),
         allowNull: true
       },
-      lastName: {
+      expirationDate: {
         type: DataTypes.STRING(255),
         allowNull: true
       },
-      lastLoggedIn: {
-        type: DataTypes.DATE,
+      subscriptionDate: {
+        type: DataTypes.STRING(255),
         allowNull: true
-      },
-      emailVerified: {
-        type: DataTypes.INTEGER(1),
-        allowNull: true,
-        defaultValue: "0"
       },
       createdAt: {
         type: DataTypes.DATE,
@@ -50,13 +41,17 @@ module.exports = function(sequelize, DataTypes) {
         type: DataTypes.DATE,
         allowNull: false
       },
-      socialId: {
+      OwnerReference: {
         type: DataTypes.STRING(255),
-        allowNull: true
+        allowNull: true,
+        references: {
+          model: "payment_informations",
+          key: "id"
+        }
       }
     },
     {
-      tableName: "users"
+      tableName: "subscriptions"
     }
   );
 };

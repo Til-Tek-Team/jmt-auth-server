@@ -1,22 +1,34 @@
 /* jshint indent: 2 */
-const bcryptjs = require("bcryptjs");
 
 module.exports = function(sequelize, DataTypes) {
-  let application = sequelize.define(
+  return sequelize.define(
     "application_users",
     {
       id: {
+        type: DataTypes.INTEGER(11),
         allowNull: false,
-        autoIncrement: true,
         primaryKey: true,
-        type: DataTypes.INTEGER
+        autoIncrement: true
       },
       role: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(255),
+        allowNull: false
+      },
+      verified: {
+        type: DataTypes.INTEGER(1),
+        allowNull: true,
+        defaultValue: "0"
+      },
+      createdAt: {
+        type: DataTypes.DATE,
+        allowNull: false
+      },
+      updatedAt: {
+        type: DataTypes.DATE,
         allowNull: false
       },
       ApplicationId: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(255),
         allowNull: true,
         references: {
           model: "applications",
@@ -31,19 +43,21 @@ module.exports = function(sequelize, DataTypes) {
           key: "id"
         }
       },
-      createdAt: {
-        allowNull: false,
-        type: DataTypes.DATE
+      CompanyId: {
+        type: DataTypes.CHAR(36),
+        allowNull: true,
+        references: {
+          model: "companies",
+          key: "id"
+        }
       },
-      updatedAt: {
-        allowNull: false,
-        type: DataTypes.DATE
+      PaymentIdentifier: {
+        type: DataTypes.STRING(255),
+        allowNull: true
       }
     },
     {
       tableName: "application_users"
     }
   );
-
-  return application;
 };

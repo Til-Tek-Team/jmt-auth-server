@@ -1,32 +1,30 @@
 /* jshint indent: 2 */
-const bcryptjs = require("bcryptjs");
 
 module.exports = function(sequelize, DataTypes) {
-  let application = sequelize.define(
+  return sequelize.define(
     "applications",
     {
       applicationName: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(255),
         allowNull: false
       },
       applicationId: {
-        type: DataTypes.STRING,
-        defaultValue: false,
+        type: DataTypes.STRING(255),
+        allowNull: false,
+        defaultValue: "0",
         primaryKey: true
       },
       createdAt: {
-        allowNull: false,
-        type: DataTypes.DATE
+        type: DataTypes.DATE,
+        allowNull: false
       },
       updatedAt: {
-        allowNull: false,
-        type: DataTypes.DATE
+        type: DataTypes.DATE,
+        allowNull: false
       }
     },
     {
       tableName: "applications"
     }
   );
-
-  return application;
 };

@@ -1,24 +1,24 @@
 "use strict";
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable("application_users", {
+    return queryInterface.createTable("subscription_transactions", {
       id: {
-        allowNull: false,
-        autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.UUID,
+        allowNull: false,
+        defaultValue: Sequelize.UUIDV4
       },
-      role: {
+      transactionFrom: {
         type: Sequelize.STRING,
         allowNull: false
       },
-      verified: {
-        type: Sequelize.BOOLEAN,
-        defaultValue: false
+      transactionTo: {
+        type: Sequelize.STRING,
+        allowNull: false
       },
-      PaymentIdentifier: {
-        type: DataTypes.STRING(255),
-        allowNull: true
+      amount: {
+        type: Sequelize.INTEGER,
+        allowNull: false
       },
       createdAt: {
         allowNull: false,
@@ -31,6 +31,6 @@ module.exports = {
     });
   },
   down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable("application_users");
+    return queryInterface.dropTable("subscription_transactions");
   }
 };
