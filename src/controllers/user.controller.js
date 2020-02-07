@@ -258,6 +258,7 @@ async function verifyTokenHandler(token) {
 
 async function verifyEmailHandler(token) {
   let retriveToken = await tokenService.getToken(token);
+  // console.log("retrived token value", retriveToken);
 
   if (!retriveToken) {
     throw "invalid token";
@@ -265,12 +266,16 @@ async function verifyEmailHandler(token) {
 
   var decoded = jwt.verify(token, CONSTANTS.JWTEMAILSECRET);
 
+  // console.log("decoded token value", decoded);
+
   let userId = decoded.sub;
 
   let user = await userService.getUserById(userId);
   if (!user) {
     throw "something went wrong";
   }
+
+  // console.log("retrived user value", user);
 
   let updatedUser = await userService.updateUser(user, { emailVerified: true });
   let updateApplicationUser = await userService.updateApplicationUser(userId);
@@ -442,8 +447,6 @@ async function updateUserHandler(user) {
     throw "user not found";
   }
   const updatedUser = await userService.updateUser(dbUser, user);
-
-  console.log(updatedUser);
 
   if (!updatedUser) {
     throw "something went wrong";

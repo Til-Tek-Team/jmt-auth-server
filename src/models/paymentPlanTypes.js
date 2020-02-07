@@ -1,46 +1,48 @@
-"use strict";
-module.exports = {
-  up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable("payment_plan_types", {
+/* jshint indent: 2 */
+
+module.exports = function(sequelize, DataTypes) {
+  return sequelize.define(
+    "payment_plan_types",
+    {
       id: {
         primaryKey: true,
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
         allowNull: false,
         autoIncrement: true
       },
       type: {
-        type: Sequelize.STRING,
+        type: DataTypes.STRING,
         allowNull: false
       },
       name: {
-        type: Sequelize.STRING,
+        type: DataTypes.STRING,
         allowNull: false
       },
       valueInPoints: {
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
         allowNull: false
       },
       valueInDays: {
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
         allowNull: false
       },
       amount: {
-        type: Sequelize.INTEGER,
+        type: DataTypes.INTEGER,
         allowNull: false
       },
       createdAt: {
         allowNull: true,
-        type: Sequelize.DATE,
+        type: DataTypes.DATE,
         defaultValue: null
       },
       updatedAt: {
         allowNull: true,
-        type: Sequelize.DATE,
+        type: DataTypes.DATE,
         defaultValue: null
       }
-    });
-  },
-  down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable("payment_plan_types");
-  }
+    },
+    {
+      tableName: "payment_plan_types"
+    }
+  );
 };

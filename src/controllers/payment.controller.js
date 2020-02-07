@@ -31,6 +31,47 @@ function getUserPaymentInformations(req, res, next) {
     .catch(err => next(err));
 }
 
+function buyPlan(req, res, next) {
+  const { type, name, UserId } = req.body;
+
+  if (!type || !name || !UserId) {
+    res.status(200).json({ success: false, error: "invalid request" });
+    return;
+  }
+
+  buyPlanHandler(req.body)
+    .then(subscription => res.status(200).json({ success: true, subscription }))
+    .catch(err => next(err));
+}
+
+function getSubscription(req, res, next) {
+  const { UserId, ApplicationId } = req.params;
+
+  if (!UserId || !ApplicationId) {
+    res.status(200).json({ success: false, error: "invalid request" });
+    return;
+  }
+
+  getSubscriptionHandler(UserId, ApplicationId)
+    .then(subscription => res.status(200).json({ success: true, subscription }))
+    .catch(err => next(err));
+}
+
+function getAllSubscription(req, res, next) {
+  const { ApplicationId } = req.params;
+
+  if (!ApplicationId) {
+    res.status(200).json({ success: false, error: "invalid request" });
+    return;
+  }
+
+  getAllSubscriptionHanlder(ApplicationId)
+    .then(subscriptions =>
+      res.status(200).json({ success: true, subscriptions })
+    )
+    .catch(err => next(err));
+}
+
 async function addPaymentInformationHandler(payInfo) {
   const user = await paymentService.getApplicationUserByUserId(payInfo.userId);
 
@@ -49,7 +90,7 @@ async function addPaymentInformationHandler(payInfo) {
     throw "Information already registered for this user";
   }
 
-  payInfo.id = uuid4();
+  // payInfo.id = uuid4();
   const updatedUser = await paymentService.updateAppUser(user, {
     PaymentIdentifier: payInfo.ownerReference
   });
@@ -83,6 +124,129 @@ async function getUserPaymentInformationsHandler(userId) {
   return paymentInfos;
 }
 
+async function buyPlanHandler(data) {
+  const user = await paymentService.getApplicationUserByUserId(data.UserId);
+
+  if (!user) {
+    throw "user does not exist";
+  }
+
+  const PaymentIdentifier = user.CompanyId ? user.CompanyId : user.UserId;
+
+  const payType = await paymentService.getPaymentType(data.name);
+
+  if (!payType || !payType.name) {
+    throw "invalid request";
+  }
+
+  let tempSub = await paymentService.getSubscription(PaymentIdentifier);
+  let oldSubscription = tempSub ? { ...tempSub.dataValues } : null;
+
+  let subscription = tempSub ? tempSub : {};
+  subscription["type"] = payType.type;
+  subscription["PaymentId"] = PaymentIdentifier;
+  subscription["createdAt"] = subscription.createdAt
+    ? subscription.createdAt
+    : new Date()
+        .toISOString()
+        .split(".")[0]
+        .replace("T", " ");
+  subscription["updatedAt"] = new Date()
+    .toISOString()
+    .split(".")[0]
+    .replace("T", " ");
+
+  if (payType.type == "EXPRESS") {
+    subscription["points"] = subscription.points
+      ? subscription.points + payType.valueInPoints
+      : payType.valueInPoints;
+    subscription["expressType"] = payType.name;
+    subscription["expirationDate"] = null;
+    subscription["premiumType"] = null;
+  } else {
+    subscription["expirationDate"] = subscription.expirationDate
+      ? new Date(
+          new Date(subscription.expirationDate).getTime() +
+            24 * 60 * 60 * 1000 * payType.valueInDays
+        )
+          .toISOString()
+          .split(".")[0]
+          .replace("T", " ")
+      : new Date(
+          new Date().getTime() + 24 * 60 * 60 * 1000 * payType.valueInDays
+        )
+          .toISOString()
+          .split(".")[0]
+          .replace("T", " ");
+    subscription["premiumType"] = payType.name;
+    subscription["points"] = null;
+    subscription["expressType"] = null;
+  }
+
+  // console.log(subscription);
+
+  let newSub;
+  let trans;
+  if (tempSub) {
+    trans = await addSubscriptionTransaction(
+      subscription,
+      oldSubscription,
+      user.id,
+      PaymentIdentifier,
+      payType.amount
+    );
+    newSub = await paymentService.updateSubscription(
+      tempSub,
+      subscription.dataValues
+    );
+  } else {
+    trans = await addSubscriptionTransaction(
+      subscription,
+      oldSubscription,
+      user.id,
+      PaymentIdentifier,
+      payType.amount
+    );
+    newSub = await paymentService.addSubscription(subscription);
+  }
+
+  if (!newSub || !trans) {
+    throw "something went wrong";
+  }
+
+  return newSub;
+}
+
+async function getSubscriptionHandler(UserId, ApplicationId) {
+  const appUser = await paymentService.getApplicationUserByUserIdAndApplication(
+    UserId,
+    ApplicationId
+  );
+  if (!appUser) {
+    throw "user does not exist";
+  }
+
+  const sub = await paymentService.getSubscription(
+    appUser.CompanyId ? appUser.CompanyId : appUser.UserId
+  );
+
+  if (!sub) {
+    throw "use do not have subscription";
+  }
+
+  return sub;
+}
+
+async function getAllSubscriptionHanlder(ApplicationId) {
+  const subscriptions = await paymentService.getAllSubscription(ApplicationId);
+
+  if (!subscriptions) {
+    throw "something went wrong";
+  }
+
+  return subscriptions;
+}
+
 async function checkCardUnique(creditCardNumber, ownerReference) {
   const foundCard = await paymentService.getUserPaymentInformation(
     creditCardNumber,
@@ -91,7 +255,49 @@ async function checkCardUnique(creditCardNumber, ownerReference) {
   return !!foundCard;
 }
 
+async function addSubscriptionTransaction(
+  newSub,
+  oldSub,
+  UserId,
+  PaymentId,
+  amount
+) {
+  let subTransaction = {};
+  subTransaction.transactionFrom = oldSub
+    ? oldSub.type == "EXPRESS"
+      ? oldSub.expressType
+      : oldSub.premiumType
+    : "NONE";
+  subTransaction.transactionTo =
+    newSub.type == "EXPRESS" ? newSub.expressType : newSub.premiumType;
+  subTransaction.UserId = UserId;
+  subTransaction.PaymentId = PaymentId;
+  subTransaction.createdAt = new Date()
+    .toISOString()
+    .split(".")[0]
+    .replace("T", " ");
+  subTransaction.updatedAt = new Date()
+    .toISOString()
+    .split(".")[0]
+    .replace("T", " ");
+
+  subTransaction.amount = amount;
+
+  const savedTrans = await paymentService.addSubscriptionTransaction(
+    subTransaction
+  );
+
+  if (!savedTrans) {
+    return false;
+  }
+
+  return true;
+}
+
 module.exports = {
   addPaymentInformation,
-  getUserPaymentInformations
+  getUserPaymentInformations,
+  buyPlan,
+  getSubscription,
+  getAllSubscription
 };

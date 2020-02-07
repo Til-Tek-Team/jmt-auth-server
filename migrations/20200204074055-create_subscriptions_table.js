@@ -20,7 +20,7 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: true
       },
-      expressExpress: {
+      expressType: {
         type: Sequelize.STRING,
         allowNull: true
       },

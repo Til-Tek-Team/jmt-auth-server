@@ -5,9 +5,10 @@ module.exports = function(sequelize, DataTypes) {
     "subscription_transactions",
     {
       id: {
-        type: DataTypes.CHAR(36),
+        primaryKey: true,
+        type: DataTypes.UUID,
         allowNull: false,
-        primaryKey: true
+        defaultValue: DataTypes.UUIDV4
       },
       transactionFrom: {
         type: DataTypes.STRING(255),

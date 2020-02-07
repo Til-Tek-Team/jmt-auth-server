@@ -5,9 +5,10 @@ module.exports = function(sequelize, DataTypes) {
     "companies",
     {
       id: {
-        type: DataTypes.CHAR(36),
+        primaryKey: true,
+        type: DataTypes.UUID,
         allowNull: false,
-        primaryKey: true
+        defaultValue: DataTypes.UUIDV4
       },
       companyName: {
         type: DataTypes.STRING(255),

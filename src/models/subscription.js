@@ -5,9 +5,10 @@ module.exports = function(sequelize, DataTypes) {
     "subscriptions",
     {
       id: {
-        type: DataTypes.CHAR(36),
+        primaryKey: true,
+        type: DataTypes.UUID,
         allowNull: false,
-        primaryKey: true
+        defaultValue: DataTypes.UUIDV4
       },
       type: {
         type: DataTypes.STRING(255),
@@ -21,7 +22,7 @@ module.exports = function(sequelize, DataTypes) {
         type: DataTypes.STRING(255),
         allowNull: true
       },
-      expressExpress: {
+      expressType: {
         type: DataTypes.STRING(255),
         allowNull: true
       },
@@ -41,7 +42,7 @@ module.exports = function(sequelize, DataTypes) {
         type: DataTypes.DATE,
         allowNull: false
       },
-      OwnerReference: {
+      PaymentId: {
         type: DataTypes.STRING(255),
         allowNull: true,
         references: {

@@ -1,13 +1,15 @@
 /* jshint indent: 2 */
+const bcryptjs = require("bcryptjs");
 
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define(
+  let user = sequelize.define(
     "users",
     {
       id: {
-        type: DataTypes.CHAR(36),
+        primaryKey: true,
+        type: DataTypes.UUID,
         allowNull: false,
-        primaryKey: true
+        defaultValue: DataTypes.UUIDV4
       },
       username: {
         type: DataTypes.STRING(255),
@@ -59,4 +61,10 @@ module.exports = function(sequelize, DataTypes) {
       tableName: "users"
     }
   );
+  user.beforeCreate((u, options) => {
+    u.password = bcryptjs.hashSync(u.password, 10);
+    return user;
+  });
+
+  return user;
 };

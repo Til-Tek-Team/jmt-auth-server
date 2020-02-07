@@ -1,9 +1,21 @@
-const { ApplicationUser, User, PaymentInformation } = require("../models");
+const {
+  ApplicationUser,
+  User,
+  PaymentInformation,
+  PaymentPlanTypes,
+  Subscription,
+  SubscriptionTransaction
+} = require("../models");
 
 function getApplicationUserByUserId(UserId) {
   return ApplicationUser.findOne({
     where: { UserId }
-    // include: [{ model: User }]
+  }).catch(err => console.log(err));
+}
+
+function getApplicationUserByUserIdAndApplication(UserId, ApplicationId) {
+  return ApplicationUser.findOne({
+    where: { UserId, ApplicationId }
   }).catch(err => console.log(err));
 }
 
@@ -27,10 +39,47 @@ function updateAppUser(user, data) {
   return user.update(data).catch(err => console.log(err));
 }
 
+function getPaymentType(name) {
+  return PaymentPlanTypes.findOne({ where: { name } }).catch(err =>
+    console.log(err)
+  );
+}
+
+function updateSubscription(subscription, data) {
+  return subscription.update(data).catch(err => console.log(err));
+}
+
+function addSubscription(subscription) {
+  return Subscription.create(subscription).catch(err => console.log(err));
+}
+
+function getSubscription(PaymentId) {
+  return Subscription.findOne({ where: { PaymentId } }).catch(err =>
+    console.log(err)
+  );
+}
+
+function addSubscriptionTransaction(subscriptionTrans) {
+  return SubscriptionTransaction.create(subscriptionTrans).catch(err =>
+    console.log(err)
+  );
+}
+
+function getAllSubscription(ApplicationId) {
+  return SubscriptionTransaction.findAll().catch(err => console.log(err));
+}
+
 module.exports = {
   getApplicationUserByUserId,
   addPaymentInformation,
   getUserPaymentInformation,
   getUserPaymentInformations,
-  updateAppUser
+  updateAppUser,
+  getPaymentType,
+  updateSubscription,
+  addSubscription,
+  getSubscription,
+  addSubscriptionTransaction,
+  getApplicationUserByUserIdAndApplication,
+  getAllSubscription
 };

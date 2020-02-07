@@ -1,9 +1,15 @@
 const app = (module.exports = require("express")());
 
-const PaymentController = require("../controllers/payment.controller");
+const paymentController = require("../controllers/payment.controller");
 
-app.post("/payment_information", PaymentController.addPaymentInformation);
+app.get("/subscription/:ApplicationId", paymentController.getAllSubscription);
+app.get(
+  "/subscription/:ApplicationId/:UserId",
+  paymentController.getSubscription
+);
+app.post("/payment_information", paymentController.addPaymentInformation);
+app.post("/buy_plan", paymentController.buyPlan);
 app.get(
   "/:userId/payment_information",
-  PaymentController.getUserPaymentInformations
+  paymentController.getUserPaymentInformations
 );
