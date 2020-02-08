@@ -1,6 +1,6 @@
 const Sequelize = require("sequelize");
 
-const sequelize = new Sequelize("auth_server_payment", "root", "password", {
+const sequelize = new Sequelize("final_auth_server_1", "root", "password", {
   host: "192.168.0.10",
   dialect: "mysql",
   logging: false

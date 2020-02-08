@@ -332,11 +332,7 @@ async function purchaseCV(subscriptionId) {
   } else if ( subscription && subscription.type == "PREMIUM") {
     const today = moment().format();  
     if (subscription.expirationDate >= today) {
-      const point = parseInt(subscription.points) - parseInt(CVPOINT);
-      const updateSubscription = await paymentService.updateSubscriptionById(subscription.id,{points:point});
-      if(updateSubscription){
-        return updateSubscription;
-      }
+      return subscription;
     }
   }
 

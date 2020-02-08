@@ -1,5 +1,6 @@
 const userService = require("../services/user.service");
 const tokenService = require("../services/token.service");
+const paymentService = require("../services/payment.service");
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const CONSTANTS = require("../../constants.js");
@@ -191,6 +192,32 @@ function updateUser(req, res, next) {
 
   updateUserHandler({ firstName, lastName, phoneNumber, id })
     .then(user => res.status(200).json({ success: true, user }))
+    .catch(err => next(err));
+}
+
+function addCmpanyProfile(req, res, next) {
+  let company = req.body;
+  let {
+    id,
+    companyName,
+    address,
+    industryType,
+    ApplicationId,
+    user_id
+  } = company;
+  if (
+    !id ||
+    !companyName ||
+    !address ||
+    !industryType ||
+    !ApplicationId ||
+    !user_id
+  ) {
+    return res.status(200).json({ success: false, error: "invalid request" });
+  }
+
+  addCompanyProfileHandler(company)
+    .then(company => res.status(200).json({ success: true, company }))
     .catch(err => next(err));
 }
 
@@ -455,6 +482,48 @@ async function updateUserHandler(user) {
   return updatedUser;
 }
 
+async function addCompanyProfileHandler(company) {
+  console.log(company);
+  const appUser = await paymentService.getApplicationUserByUserIdAndApplication(
+    company.user_id,
+    company.ApplicationId
+  );
+
+  if (!appUser) {
+    throw "user is not found";
+  }
+
+  company.createdAt = new Date();
+  company.updatedAt = new Date();
+
+  const paymentInfo = {};
+  paymentInfo.firstName = company.companyName;
+  paymentInfo.lastName = company.companyName;
+  paymentInfo.id = company.id;
+  paymentInfo.ownerReference = company.id;
+  paymentInfo.creditCardNumber = "5500000000000004";
+  paymentInfo.securityCode = 1234;
+  paymentInfo.cvc = 1234;
+  paymentInfo.currencyType = "peso";
+  paymentInfo.createdAt = new Date();
+  paymentInfo.updatedAt = new Date();
+
+  const addCompany = await paymentService.addCompany(company);
+  const updatedUser = await paymentService.updateApplicationUser(appUser, {
+    ...appUser.dataValues,
+    CompanyId: company.id
+  });
+  const paymentInfoAdd = await paymentService.addPaymentInformation(
+    paymentInfo
+  );
+
+  if (!updatedUser || !addCompany || !paymentInfoAdd) {
+    throw "something went wrong";
+  }
+
+  return addCompany;
+}
+
 module.exports = {
   login,
   signUp,
@@ -468,5 +537,6 @@ module.exports = {
   updatePassword,
   getUserByEmail,
   setPassword,
-  updateUser
+  updateUser,
+  addCmpanyProfile
 };
