@@ -181,6 +181,7 @@ async function buyPlanHandler(data) {
     subscription["expirationDate"] = null;
     subscription["premiumType"] = null;
   } else {
+<<<<<<< HEAD
     subscription["expirationDate"] = subscription.expirationDate
       ? new Date(
         new Date(subscription.expirationDate).getTime() +
@@ -195,6 +196,28 @@ async function buyPlanHandler(data) {
         .toISOString()
         .split(".")[0]
         .replace("T", " ");
+=======
+    subscription["expirationDate"] =
+      subscription.expirationDate &&
+      subscription.expirationDate >
+        new Date()
+          .toISOString()
+          .split(".")[0]
+          .replace("T", " ")
+        ? new Date(
+            new Date(subscription.expirationDate).getTime() +
+              24 * 60 * 60 * 1000 * payType.valueInDays
+          )
+            .toISOString()
+            .split(".")[0]
+            .replace("T", " ")
+        : new Date(
+            new Date().getTime() + 24 * 60 * 60 * 1000 * payType.valueInDays
+          )
+            .toISOString()
+            .split(".")[0]
+            .replace("T", " ");
+>>>>>>> 31fbbc709615b5a0f00fb7d25e143798eae98cca
     subscription["premiumType"] = payType.name;
     subscription["points"] = null;
     subscription["expressType"] = null;
