@@ -158,7 +158,6 @@ async function buyPlanHandler(data) {
 
   let tempSub = await paymentService.getSubscription(PaymentIdentifier);
   let oldSubscription = tempSub ? { ...tempSub.dataValues } : null;
-
   let subscription = tempSub ? tempSub : {};
   subscription["type"] = payType.type;
   subscription["PaymentId"] = PaymentIdentifier;
@@ -324,7 +323,7 @@ async function purchaseCV(subscriptionId) {
   if ( subscription && subscription.type == "EXPRESS") {
     if (subscription.points > 31) {
       const points = parseInt(subscription.points) - parseInt(CVPOINT);
-      const updateSubscription = await paymentService.updateSubscription(subscription.id,{points});
+      const updateSubscription = await paymentService.updateSubscriptionById(subscription.id,{points});
       if(updateSubscription){
         return updateSubscription;
       }
@@ -334,7 +333,7 @@ async function purchaseCV(subscriptionId) {
     const today = moment().format();  
     if (subscription.expirationDate >= today) {
       const point = parseInt(subscription.points) - parseInt(CVPOINT);
-      const updateSubscription = await paymentService.updateSubscription(subscription.id,{points:point});
+      const updateSubscription = await paymentService.updateSubscriptionById(subscription.id,{points:point});
       if(updateSubscription){
         return updateSubscription;
       }

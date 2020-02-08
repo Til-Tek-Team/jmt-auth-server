@@ -45,9 +45,13 @@ function getPaymentType(name) {
   );
 }
 
-async function updateSubscription(id, data) {
+async function updateSubscriptionById(id, data) {
   let subscriptions = await Subscription.findOne({where: { id }}).catch(err => console.log(err));
   return subscriptions.update(data).catch(err => console.log(err));
+}
+
+function updateSubscription(subscription, data) {
+  return subscription.update(data).catch(err => console.log(err));
 }
 
 function addSubscription(subscription) {
@@ -84,6 +88,7 @@ module.exports = {
   updateAppUser,
   getPaymentType,
   updateSubscription,
+  updateSubscriptionById,
   addSubscription,
   getSubscription,
   addSubscriptionTransaction,
