@@ -2,7 +2,7 @@
   "development": {
     "username": "root",
     "password": "password",
-    "database": "auth_server_payment",
+    "database": "final_auth_server_1",
     "host": "192.168.0.10",
     "dialect": "mysql",
     "operatorsAliases": false

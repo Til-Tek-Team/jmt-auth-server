@@ -17,7 +17,7 @@ module.exports = {
         defaultValue: false
       },
       PaymentIdentifier: {
-        type: DataTypes.STRING(255),
+        type: Sequelize.STRING(255),
         allowNull: true
       },
       createdAt: {
