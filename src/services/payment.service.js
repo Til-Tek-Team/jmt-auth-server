@@ -4,7 +4,8 @@ const {
   PaymentInformation,
   PaymentPlanTypes,
   Subscription,
-  SubscriptionTransaction
+  SubscriptionTransaction,
+  Company
 } = require("../models");
 
 function getApplicationUserByUserId(UserId) {
@@ -69,6 +70,14 @@ function getAllSubscription(ApplicationId) {
   return SubscriptionTransaction.findAll().catch(err => console.log(err));
 }
 
+function updateApplicationUser(appUser, data) {
+  return appUser.update(data).catch(err => console.log(err));
+}
+
+function addCompany(company) {
+  return Company.create(company).catch(err => console.log(err));
+}
+
 module.exports = {
   getApplicationUserByUserId,
   addPaymentInformation,
@@ -81,5 +90,7 @@ module.exports = {
   getSubscription,
   addSubscriptionTransaction,
   getApplicationUserByUserIdAndApplication,
-  getAllSubscription
+  getAllSubscription,
+  updateApplicationUser,
+  addCompany
 };
