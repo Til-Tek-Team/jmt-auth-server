@@ -1,6 +1,7 @@
 const { validatePaymentInformation } = require("../_helpers/validators");
 const uuid4 = require("uuid/v4");
 const paymentService = require("../services/payment.service");
+var moment = require("moment");
 
 function addPaymentInformation(req, res, next) {
   const payInfo = req.body;
@@ -70,6 +71,22 @@ function getAllSubscription(req, res, next) {
       res.status(200).json({ success: true, subscriptions })
     )
     .catch(err => next(err));
+}
+
+function purchaseBySubscriptionId(req, res, next) {
+  const { subscriptionId } = req.params;
+
+  if (!subscriptionId) {
+    res.status(200).json({ success: false, error: "invalid request" });
+    return;
+  }
+
+  purchaseCV(subscriptionId)
+    .then(subscriptions =>
+      res.status(200).json({ success: true, subscriptions })
+    )
+    .catch(err => next(err));
+
 }
 
 async function addPaymentInformationHandler(payInfo) {
@@ -148,9 +165,9 @@ async function buyPlanHandler(data) {
   subscription["createdAt"] = subscription.createdAt
     ? subscription.createdAt
     : new Date()
-        .toISOString()
-        .split(".")[0]
-        .replace("T", " ");
+      .toISOString()
+      .split(".")[0]
+      .replace("T", " ");
   subscription["updatedAt"] = new Date()
     .toISOString()
     .split(".")[0]
@@ -166,18 +183,18 @@ async function buyPlanHandler(data) {
   } else {
     subscription["expirationDate"] = subscription.expirationDate
       ? new Date(
-          new Date(subscription.expirationDate).getTime() +
-            24 * 60 * 60 * 1000 * payType.valueInDays
-        )
-          .toISOString()
-          .split(".")[0]
-          .replace("T", " ")
+        new Date(subscription.expirationDate).getTime() +
+        24 * 60 * 60 * 1000 * payType.valueInDays
+      )
+        .toISOString()
+        .split(".")[0]
+        .replace("T", " ")
       : new Date(
-          new Date().getTime() + 24 * 60 * 60 * 1000 * payType.valueInDays
-        )
-          .toISOString()
-          .split(".")[0]
-          .replace("T", " ");
+        new Date().getTime() + 24 * 60 * 60 * 1000 * payType.valueInDays
+      )
+        .toISOString()
+        .split(".")[0]
+        .replace("T", " ");
     subscription["premiumType"] = payType.name;
     subscription["points"] = null;
     subscription["expressType"] = null;
@@ -294,10 +311,38 @@ async function addSubscriptionTransaction(
   return true;
 }
 
+async function purchaseCV(subscriptionId) {
+  const CVPOINT = 30;
+  const subscription = await paymentService.getSubscriptionById(subscriptionId);
+
+  if ( subscription && subscription.type == "EXPRESS") {
+    if (subscription.points > 31) {
+      const points = parseInt(subscription.points) - parseInt(CVPOINT);
+      const updateSubscription = await paymentService.updateSubscription(subscription.id,{points});
+      if(updateSubscription){
+        return updateSubscription;
+      }
+   
+    }
+  } else if ( subscription && subscription.type == "PREMIUM") {
+    const today = moment().format();  
+    if (subscription.expirationDate >= today) {
+      const point = parseInt(subscription.points) - parseInt(CVPOINT);
+      const updateSubscription = await paymentService.updateSubscription(subscription.id,{points:point});
+      if(updateSubscription){
+        return updateSubscription;
+      }
+    }
+  }
+
+}
+
 module.exports = {
   addPaymentInformation,
   getUserPaymentInformations,
   buyPlan,
   getSubscription,
-  getAllSubscription
+  getAllSubscription,
+  purchaseCV,
+  purchaseBySubscriptionId
 };

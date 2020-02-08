@@ -13,3 +13,4 @@ app.get(
   "/:userId/payment_information",
   paymentController.getUserPaymentInformations
 );
+app.post("/purchase/cv/:subscriptionId",paymentController.purchaseBySubscriptionId)

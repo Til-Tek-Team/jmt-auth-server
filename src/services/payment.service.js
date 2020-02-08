@@ -45,8 +45,9 @@ function getPaymentType(name) {
   );
 }
 
-function updateSubscription(subscription, data) {
-  return subscription.update(data).catch(err => console.log(err));
+async function updateSubscription(id, data) {
+  let subscriptions = await Subscription.findOne({where: { id }}).catch(err => console.log(err));
+  return subscriptions.update(data).catch(err => console.log(err));
 }
 
 function addSubscription(subscription) {
@@ -55,6 +56,12 @@ function addSubscription(subscription) {
 
 function getSubscription(PaymentId) {
   return Subscription.findOne({ where: { PaymentId } }).catch(err =>
+    console.log(err)
+  );
+}
+
+function getSubscriptionById(id){
+  return Subscription.findOne({ where: { id } }).catch(err =>
     console.log(err)
   );
 }
@@ -81,5 +88,6 @@ module.exports = {
   getSubscription,
   addSubscriptionTransaction,
   getApplicationUserByUserIdAndApplication,
-  getAllSubscription
+  getAllSubscription,
+  getSubscriptionById
 };
