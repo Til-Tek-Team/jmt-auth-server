@@ -5,7 +5,7 @@ const {
   PaymentPlanTypes,
   Subscription,
   SubscriptionTransaction,
-  Company
+  Company,Application
 } = require("../models");
 
 function getApplicationUserByUserId(UserId) {
@@ -16,7 +16,7 @@ function getApplicationUserByUserId(UserId) {
 
 function getApplicationUserByUserIdAndApplication(UserId, ApplicationId) {
   return ApplicationUser.findOne({
-    where: { UserId, ApplicationId }
+    where: { UserId, applicationApplicationId:ApplicationId }
   }).catch(err => console.log(err));
 }
 
@@ -71,6 +71,18 @@ function getSubscriptionById(id){
   );
 }
 
+function getSubscriptionTransactionById(id){
+  return SubscriptionTransaction.findOne({where:{id},include: [{model: ApplicationUser,include:[{model:User},{model:Company}]}]}).catch(err =>
+    console.log(err)
+  );
+}
+
+function getSubscriptionTransactionByCompanyId(companyId){
+  return SubscriptionTransaction.findAll({where:{paymentInformationId:companyId},include: [{model: ApplicationUser,include:[{model:User},{model:Company}]}]}).catch(err =>
+    console.log(err)
+  );
+}
+
 function addSubscriptionTransaction(subscriptionTrans) {
   return SubscriptionTransaction.create(subscriptionTrans).catch(err =>
     console.log(err)
@@ -78,11 +90,15 @@ function addSubscriptionTransaction(subscriptionTrans) {
 }
 
 function getAllSubscription(ApplicationId) {
-  return SubscriptionTransaction.findAll().catch(err => console.log(err));
+  return SubscriptionTransaction.findAll({include: [{model: ApplicationUser,include:[{model:User},{model:Company}]}]}).catch(err => console.log(err));
 }
 
 function updateApplicationUser(appUser, data) {
   return appUser.update(data).catch(err => console.log(err));
+}
+
+function updateconfirmPaymentField(id){
+  return SubscriptionTransaction.update({paid:1},{where: { id }}).catch(err => console.log(err));
 }
 
 function addCompany(company) {
@@ -105,5 +121,8 @@ module.exports = {
   getAllSubscription,
   getSubscriptionById,
   updateApplicationUser,
-  addCompany
+  addCompany,
+  getSubscriptionTransactionById,
+  getSubscriptionTransactionByCompanyId,
+  updateconfirmPaymentField
 };

@@ -14,3 +14,6 @@ app.get(
   paymentController.getUserPaymentInformations
 );
 app.post("/purchase/cv/:subscriptionId",paymentController.purchaseBySubscriptionId)
+app.get("/subscription_transaction/:id", paymentController.getAllSubscriptionById);
+app.put("/subscription_transaction/:id", paymentController.confirmPayment);
+app.get("/company/subscription_transaction/:compId", paymentController.getAllSubscriptionByCompId);

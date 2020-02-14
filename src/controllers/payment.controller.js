@@ -58,6 +58,29 @@ function getSubscription(req, res, next) {
     .catch(err => next(err));
 }
 
+function getAllSubscriptionById(req,res,next){
+  const { id } = req.params;
+  if (!id) {
+    res.status(200).json({ success: false, error: "invalid request" });
+    return;
+  }
+  // console.log(id)
+  getSubscriptionByIdHandler(id)
+    .then(subscription => res.status(200).json({ success: true, subscription }))
+    .catch(err => next(err));
+}
+
+function getAllSubscriptionByCompId(req,res,next){
+  const { compId } = req.params;
+  if (!compId) {
+    res.status(200).json({ success: false, error: "invalid request" });
+    return;
+  }
+  getSubscriptionByCompIdHandler(compId)
+    .then(subscription => res.status(200).json({ success: true, subscription }))
+    .catch(err => next(err));
+}
+
 function getAllSubscription(req, res, next) {
   const { ApplicationId } = req.params;
 
@@ -247,7 +270,7 @@ async function getSubscriptionHandler(UserId, ApplicationId) {
   if (!appUser) {
     throw "user does not exist";
   }
-
+ 
   const sub = await paymentService.getSubscription(
     appUser.CompanyId ? appUser.CompanyId : appUser.UserId
   );
@@ -256,6 +279,24 @@ async function getSubscriptionHandler(UserId, ApplicationId) {
     throw "use do not have subscription";
   }
 
+  return sub;
+}
+
+async function getSubscriptionByIdHandler(id){
+  const sub = await paymentService.getSubscriptionTransactionById(id);
+
+  if (!sub) {
+    throw "use do not have subscription";
+  }
+  return sub;
+}
+
+async function getSubscriptionByCompIdHandler(id){
+  const sub = await paymentService.getSubscriptionTransactionByCompanyId(id);
+
+  if (!sub) {
+    throw "use do not have subscription";
+  }
   return sub;
 }
 
@@ -292,8 +333,8 @@ async function addSubscriptionTransaction(
     : "NONE";
   subTransaction.transactionTo =
     newSub.type == "EXPRESS" ? newSub.expressType : newSub.premiumType;
-  subTransaction.UserId = UserId;
-  subTransaction.PaymentId = PaymentId;
+  subTransaction.applicationUserId = UserId;
+  subTransaction.paymentInformationId = PaymentId;
   subTransaction.createdAt = new Date()
     .toISOString()
     .split(".")[0]
@@ -337,13 +378,45 @@ async function purchaseCV(subscriptionId) {
   }
 
 }
+function confirmPayment(req, res, next) {
+  confirmPaymentById(req.params.id)
+      .then(payment => payment ? res.status(200).json({ success: true, payment }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
+      .catch(err => next(err));
+}
 
+async function confirmPaymentById(id) {
+  const confirmPayment = await paymentService.getSubscriptionTransactionById(id);
+  console.log(confirmPayment)
+  if (confirmPayment.active) {
+      const confirm = await paymentService.updateconfirmPaymentField(id);
+      console.log(confirm)
+      if (confirm[0] > 0) {
+          return true;
+      }
+      return false
+  } else {
+      const confirm = await paymentService.updateconfirmPaymentField(id);
+      console.log(confirm)
+      if (confirm[0] > 0) {
+          return true;
+      }
+      return false
+  }
+  
+  if (confirmPayment) {
+      // console.log(user)
+      return confirmPayment;
+  }
+}
 module.exports = {
   addPaymentInformation,
   getUserPaymentInformations,
   buyPlan,
   getSubscription,
+  getAllSubscriptionById,
+  getAllSubscriptionByCompId,
   getAllSubscription,
   purchaseCV,
-  purchaseBySubscriptionId
+  purchaseBySubscriptionId,
+  confirmPayment
 };
