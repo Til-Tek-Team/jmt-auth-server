@@ -16,10 +16,12 @@ function updateUser(user, data) {
   return user.update(data);
 }
 
-function addApplicationUser(UserId, ApplicationId, role) {
-  return ApplicationUser.create({ UserId, ApplicationId, role }).catch(err =>
-    console.log(err)
-  );
+function addApplicationUser(UserId, applicationApplicationId, role) {
+  return ApplicationUser.create({
+    UserId,
+    applicationApplicationId,
+    role
+  }).catch(err => console.log(err));
 }
 
 function updateApplicationUser(UserId) {
