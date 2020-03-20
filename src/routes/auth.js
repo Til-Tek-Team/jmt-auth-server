@@ -27,3 +27,5 @@ app.get("/user/:email", userController.getUserByEmail);
 app.post("/update_user", userController.updateUser);
 
 app.post("/companies", userController.addCmpanyProfile);
+
+app.post("/check_username", userController.checkUsername);

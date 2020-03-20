@@ -8,6 +8,10 @@ function getUserByEmail(email) {
   return User.findOne({ where: { email } }).catch(err => console.log(err));
 }
 
+function getUserByUserName(username) {
+  return User.findOne({ where: { username } }).catch(err => console.log(err));
+}
+
 function getUserById(id) {
   return User.findOne({ where: { id } }).catch(err => console.log(err));
 }
@@ -32,11 +36,17 @@ function updateApplicationUser(UserId) {
     .catch(err => console.log(err));
 }
 
+function getUserByUsername(username) {
+  return User.findOne({ where: { username } }).catch(err => console.log(err));
+}
+
 module.exports = {
   createUser,
   getUserByEmail,
   getUserById,
   updateUser,
   addApplicationUser,
-  updateApplicationUser
+  updateApplicationUser,
+  getUserByUsername,
+  getUserByUserName
 };

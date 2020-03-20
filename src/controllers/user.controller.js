@@ -22,8 +22,6 @@ function login(req, res, next) {
 
 function signUp(req, res, next) {
   const user = req.body;
-  //   console.log(user);
-  // console.log(user);
   const valid = validateUser(user);
 
   if (!valid) {
@@ -221,8 +219,19 @@ function addCmpanyProfile(req, res, next) {
     .catch(err => next(err));
 }
 
+function checkUsername(req, res, next) {
+  console.log(req.body);
+  if (!req.body.username) {
+    return res.status(200).json({ success: false, error: "invalid request" });
+  }
+
+  checkUsernameHandler(req.body.username)
+    .then(unique => res.status(200).json({ success: true, unique }))
+    .catch(err => next(err));
+}
+
 async function loginHandler(email, password) {
-  let user = await userService.getUserByEmail(email);
+  let user = await userService.getUserByUserName(email);
   if (!user) {
     throw "email or password incorrect";
   }
@@ -244,10 +253,17 @@ async function loginHandler(email, password) {
 }
 
 async function signUpHandler(user) {
-  if (!(await isEmailUnique(user.email))) {
-    throw "Email is already in use";
+  if (!user.username) {
+    if (!(await isEmailUnique(user.email))) {
+      throw "Email is already in use";
+    }
+    user.username = user.email;
+  } else {
+    if (!(await isUsernameUnique(user.username))) {
+      throw "Username is already in use";
+    }
   }
-  user.username = user.email;
+
   let createdUser = await userService.createUser(user);
   const token = jwt.sign({ sub: createdUser.id }, CONSTANTS.JWTEMAILSECRET);
   let createToken = await tokenService.createToken({ token });
@@ -451,6 +467,15 @@ async function isEmailUnique(email) {
   return true;
 }
 
+async function isUsernameUnique(username) {
+  const foundUsername = await userService.getUserByUsername(username);
+  if (foundUsername) {
+    return false;
+  }
+
+  return true;
+}
+
 async function setPasswordHandler(email, password) {
   // console.log(email, password);
   const user = await userService.getUserByEmail(email);
@@ -524,6 +549,15 @@ async function addCompanyProfileHandler(company) {
   return addCompany;
 }
 
+async function checkUsernameHandler(username) {
+  let user = await userService.getUserByUsername(username);
+  if (user) {
+    return false;
+  }
+
+  return true;
+}
+
 module.exports = {
   login,
   signUp,
@@ -538,5 +572,6 @@ module.exports = {
   getUserByEmail,
   setPassword,
   updateUser,
-  addCmpanyProfile
+  addCmpanyProfile,
+  checkUsername
 };
