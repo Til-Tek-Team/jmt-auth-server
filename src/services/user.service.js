@@ -17,9 +17,11 @@ function updateUser(user, data) {
 }
 
 function addApplicationUser(UserId, applicationApplicationId, role) {
-  return ApplicationUser.create({ UserId, applicationApplicationId, role }).catch(err =>
-    console.log(err)
-  );
+  return ApplicationUser.create({
+    UserId,
+    applicationApplicationId,
+    role
+  }).catch(err => console.log(err));
 }
 
 function updateApplicationUser(UserId) {

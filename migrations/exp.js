@@ -43,10 +43,10 @@ var payment_types = [
   }
 ];
 
-`INSERT INTO payment_plan_types (type, name, valueInPoints, valueInDays) VALUES ('EXPRESS','BRONZE',300,0);
-INSERT INTO payment_plan_types (type, name, valueInPoints, valueInDays) VALUES ('EXPRESS','SILVER',500,0);
-INSERT INTO payment_plan_types (type, name, valueInPoints, valueInDays) VALUES ('EXPRESS','GOLD',1000,0);
-INSERT INTO payment_plan_types (type, name, valueInPoints, valueInDays) VALUES ('PREMIUM','MONTHLY',0,30);
-INSERT INTO payment_plan_types (type, name, valueInPoints, valueInDays) VALUES ('PREMIUM','QUARTERLY',0,120);
-INSERT INTO payment_plan_types (type, name, valueInPoints, valueInDays) VALUES ('PREMIUM','BI-ANNUAL',0,180);
-INSERT INTO payment_plan_types (type, name, valueInPoints, valueInDays) VALUES ('PREMIUM','ANNUAL',0,365)`;
+`INSERT INTO payment_plan_types (type, name, valueInPoints, valueInDays, amount) VALUES ('EXPRESS','BRONZE',300,0, 50);
+INSERT INTO payment_plan_types (type, name, valueInPoints, valueInDays, amount) VALUES ('EXPRESS','SILVER',500,0, 100);
+INSERT INTO payment_plan_types (type, name, valueInPoints, valueInDays, amount) VALUES ('EXPRESS','GOLD',1000,0, 150);
+INSERT INTO payment_plan_types (type, name, valueInPoints, valueInDays, amount) VALUES ('PREMIUM','MONTHLY',0,30, 200);
+INSERT INTO payment_plan_types (type, name, valueInPoints, valueInDays, amount) VALUES ('PREMIUM','QUARTERLY',0,120, 500);
+INSERT INTO payment_plan_types (type, name, valueInPoints, valueInDays, amount) VALUES ('PREMIUM','BI-ANNUAL',0,180, 800);
+INSERT INTO payment_plan_types (type, name, valueInPoints, valueInDays, amount) VALUES ('PREMIUM','ANNUAL',0,365, 1400)`;

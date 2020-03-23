@@ -256,10 +256,10 @@ async function signUpHandler(user) {
     throw "something went wrong";
   }
 
-  if (user.APPLICATION == "TRABAHANAP") {
+  if (user.APPLICATION == "TRABAHANAP" || user.APPLICATION == "MSP") {
     const applicationUser = await userService.addApplicationUser(
       createdUser.id,
-      "TRABAHANAP",
+      user.APPLICATION,
       user.role
     );
 
@@ -362,7 +362,7 @@ async function changePasswordHandler(userId, password) {
 }
 
 async function getUserHandler(email) {
-  const user = userService.getUserByEmail(email);
+  const user = await userService.getUserByEmail(email);
 
   if (!user) {
     throw "user does not exist";
