@@ -5,7 +5,8 @@ const {
   PaymentPlanTypes,
   Subscription,
   SubscriptionTransaction,
-  Company
+  Company,
+  Application
 } = require("../models");
 
 function getApplicationUserByUserId(UserId) {
@@ -16,7 +17,7 @@ function getApplicationUserByUserId(UserId) {
 
 function getApplicationUserByUserIdAndApplication(UserId, ApplicationId) {
   return ApplicationUser.findOne({
-    where: { UserId, ApplicationId }
+    where: { UserId, applicationApplicationId: ApplicationId }
   }).catch(err => console.log(err));
 }
 
@@ -47,7 +48,9 @@ function getPaymentType(name) {
 }
 
 async function updateSubscriptionById(id, data) {
-  let subscriptions = await Subscription.findOne({where: { id }}).catch(err => console.log(err));
+  let subscriptions = await Subscription.findOne({ where: { id } }).catch(err =>
+    console.log(err)
+  );
   return subscriptions.update(data).catch(err => console.log(err));
 }
 
@@ -65,10 +68,26 @@ function getSubscription(PaymentId) {
   );
 }
 
-function getSubscriptionById(id){
-  return Subscription.findOne({ where: { id } }).catch(err =>
-    console.log(err)
-  );
+function getSubscriptionById(id) {
+  return Subscription.findOne({ where: { id } }).catch(err => console.log(err));
+}
+
+function getSubscriptionTransactionById(id) {
+  return SubscriptionTransaction.findOne({
+    where: { id },
+    include: [
+      { model: ApplicationUser, include: [{ model: User }, { model: Company }] }
+    ]
+  }).catch(err => console.log(err));
+}
+
+function getSubscriptionTransactionByCompanyId(companyId) {
+  return SubscriptionTransaction.findAll({
+    where: { paymentInformationId: companyId },
+    include: [
+      { model: ApplicationUser, include: [{ model: User }, { model: Company }] }
+    ]
+  }).catch(err => console.log(err));
 }
 
 function addSubscriptionTransaction(subscriptionTrans) {
@@ -78,15 +97,46 @@ function addSubscriptionTransaction(subscriptionTrans) {
 }
 
 function getAllSubscription(ApplicationId) {
-  return SubscriptionTransaction.findAll().catch(err => console.log(err));
+  return SubscriptionTransaction.findAll({
+    include: [
+      { model: ApplicationUser, include: [{ model: User }, { model: Company }] }
+    ]
+  }).catch(err => console.log(err));
 }
 
 function updateApplicationUser(appUser, data) {
   return appUser.update(data).catch(err => console.log(err));
 }
 
+function updateconfirmPaymentField(id) {
+  return SubscriptionTransaction.update(
+    { paid: 1 },
+    { where: { id } }
+  ).catch(err => console.log(err));
+}
+
 function addCompany(company) {
   return Company.create(company).catch(err => console.log(err));
+}
+
+function getPaymentPlanTypes() {
+  return PaymentPlanTypes.findAll({
+    order: [["amount", "ASC"]]
+  }).catch(err => console.log(err));
+}
+
+function createPaymentPlanType(plan_type) {
+  return PaymentPlanTypes.create(plan_type).catch(err => console.log(err));
+}
+
+function updatePaymentPlanType(plan_type, obj) {
+  return plan_type.update(obj).catch(err => console.log(err));
+}
+
+function getPaymentTypeById(id) {
+  return PaymentPlanTypes.findOne({ where: { id } }).catch(err =>
+    console.log(err)
+  );
 }
 
 module.exports = {
@@ -105,5 +155,12 @@ module.exports = {
   getAllSubscription,
   getSubscriptionById,
   updateApplicationUser,
-  addCompany
+  addCompany,
+  getSubscriptionTransactionById,
+  getSubscriptionTransactionByCompanyId,
+  updateconfirmPaymentField,
+  getPaymentPlanTypes,
+  createPaymentPlanType,
+  updatePaymentPlanType,
+  getPaymentTypeById
 };

@@ -200,7 +200,7 @@ function addCmpanyProfile(req, res, next) {
     companyName,
     address,
     industryType,
-    ApplicationId,
+    applicationApplicationId,
     user_id
   } = company;
   if (
@@ -208,7 +208,7 @@ function addCmpanyProfile(req, res, next) {
     !companyName ||
     !address ||
     !industryType ||
-    !ApplicationId ||
+    !applicationApplicationId ||
     !user_id
   ) {
     return res.status(200).json({ success: false, error: "invalid request" });
@@ -509,11 +509,12 @@ async function updateUserHandler(user) {
 
 async function addCompanyProfileHandler(company) {
   console.log(company);
+  // company.applicationApplicationId = company.ApplicationId;
   const appUser = await paymentService.getApplicationUserByUserIdAndApplication(
     company.user_id,
-    company.ApplicationId
+    company.applicationApplicationId
   );
-
+  
   if (!appUser) {
     throw "user is not found";
   }
@@ -532,7 +533,7 @@ async function addCompanyProfileHandler(company) {
   paymentInfo.currencyType = "peso";
   paymentInfo.createdAt = new Date();
   paymentInfo.updatedAt = new Date();
-
+  console.log(paymentInfo,'nfo')
   const addCompany = await paymentService.addCompany(company);
   const updatedUser = await paymentService.updateApplicationUser(appUser, {
     ...appUser.dataValues,

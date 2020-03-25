@@ -30,7 +30,11 @@ module.exports = function(sequelize, DataTypes) {
         type: DataTypes.DATE,
         allowNull: false
       },
-      UserId: {
+      paid: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+      },
+      applicationUserId: {
         type: DataTypes.INTEGER(11),
         allowNull: true,
         references: {
@@ -38,7 +42,7 @@ module.exports = function(sequelize, DataTypes) {
           key: "id"
         }
       },
-      PaymentId: {
+      paymentInformationId: {
         type: DataTypes.CHAR(36),
         allowNull: true,
         references: {

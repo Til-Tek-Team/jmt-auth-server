@@ -17,11 +17,12 @@ User.hasMany(ApplicationUser);
 
 // ApplicationUser.belongsTo(Application);
 // Application.hasMany(ApplicationUser);
-
-// SubscriptionTransaction.belongsTo(ApplicationUser);
+ApplicationUser.belongsTo(Company);
+// ApplicationUser.belongsTo(Application);
+SubscriptionTransaction.belongsTo(ApplicationUser);
 // ApplicationUser.hasMany(SubscriptionTransaction);
 
-// SubscriptionTransaction.belongsTo(PaymentInformation);
+SubscriptionTransaction.belongsTo(PaymentInformation);
 // PaymentInformation.hasMany(SubscriptionTransaction);
 
 // Subscription.belongsTo(PaymentInformation);

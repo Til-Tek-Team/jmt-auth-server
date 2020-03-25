@@ -30,7 +30,7 @@ module.exports = function(sequelize, DataTypes) {
         type: DataTypes.DATE,
         allowNull: false
       },
-      ApplicationId: {
+      applicationApplicationId: {
         type: DataTypes.STRING(255),
         allowNull: true,
         references: {
