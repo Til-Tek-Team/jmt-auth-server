@@ -5,7 +5,7 @@ const {
   PaymentPlanTypes,
   Subscription,
   SubscriptionTransaction,
-  Company,Application
+  Company,Application,Balance
 } = require("../models");
 
 function getApplicationUserByUserId(UserId) {
@@ -77,10 +77,21 @@ function getSubscriptionTransactionById(id){
   );
 }
 
-function getSubscriptionTransactionByCompanyId(companyId){
-  return SubscriptionTransaction.findAll({where:{paymentInformationId:companyId},include: [{model: ApplicationUser,include:[{model:User},{model:Company}]}]}).catch(err =>
-    console.log(err)
-  );
+function getCountSubscriptionTransaction(companyId){
+  let query = `SELECT count(*) as count FROM view_payment_transcation t left join subscription_transactions sb on sb.id = t.transactionId WHERE t.CompanyId='${companyId}'`
+  // let query = `select * from view_payment_transcation left join  where CompanyId = '${companyId}'`
+  return sequelize.query(query,
+    { type: sequelize.QueryTypes.SELECT }
+  ).catch(err => console.log(err));
+}
+
+function getSubscriptionTransactionByCompanyId(companyId,offset,limit){
+  let query = `SELECT t.credit as credit,t.debit as debit,t.type, sb.transactionFrom,sb.transactionTo,t.CompanyId,t.transactionDate,sb.paidBy FROM view_payment_transcation t left join subscription_transactions sb on sb.id = t.transactionId WHERE t.CompanyId='${companyId}' order by transactionDate Desc  limit ${offset},${limit}`
+  // let query = `select * from view_payment_transcation left join  where CompanyId = '${companyId}'`
+  
+  return sequelize.query(query,
+    { type: sequelize.QueryTypes.SELECT }
+  ).catch(err => console.log(err));
 }
 
 function addSubscriptionTransaction(subscriptionTrans) {
@@ -97,10 +108,26 @@ function updateApplicationUser(appUser, data) {
   return appUser.update(data).catch(err => console.log(err));
 }
 
-function updateconfirmPaymentField(id){
-  return SubscriptionTransaction.update({paid:1},{where: { id }}).catch(err => console.log(err));
+function updateconfirmPaymentField(id,paid,name,amount){
+  return SubscriptionTransaction.update({paid:paid,paidBy:name,paidAmount:amount},{where: { id }}).catch(err => console.log(err));
 }
 
+function addAmountBalance(balance){
+  return Balance.create(balance).catch(err => console.log(err));
+}
+
+function getBalanceByCompanyId(compId){
+  let query = `select sum(credit) as balance,sum(debit) as purchased from view_payment_transcation where CompanyId ='${compId}'`;
+  return sequelize.query(query,
+    { type: sequelize.QueryTypes.SELECT }
+  ).catch(err => console.log(err));
+}
+
+
+
+function depositMoney(account,data){
+  return account.update({balance:data}).catch(err => console.log(err))
+}
 function addCompany(company) {
   return Company.create(company).catch(err => console.log(err));
 }
@@ -124,5 +151,9 @@ module.exports = {
   addCompany,
   getSubscriptionTransactionById,
   getSubscriptionTransactionByCompanyId,
-  updateconfirmPaymentField
+  updateconfirmPaymentField,
+  addAmountBalance,
+  depositMoney,
+  getBalanceByCompanyId,
+  getCountSubscriptionTransaction
 };

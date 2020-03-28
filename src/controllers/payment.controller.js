@@ -1,6 +1,7 @@
 const { validatePaymentInformation } = require("../_helpers/validators");
 const uuid4 = require("uuid/v4");
 const paymentService = require("../services/payment.service");
+const userService = require("../services/user.service");
 var moment = require("moment");
 
 function addPaymentInformation(req, res, next) {
@@ -58,7 +59,7 @@ function getSubscription(req, res, next) {
     .catch(err => next(err));
 }
 
-function getAllSubscriptionById(req,res,next){
+function getAllSubscriptionById(req, res, next) {
   const { id } = req.params;
   if (!id) {
     res.status(200).json({ success: false, error: "invalid request" });
@@ -70,13 +71,46 @@ function getAllSubscriptionById(req,res,next){
     .catch(err => next(err));
 }
 
-function getAllSubscriptionByCompId(req,res,next){
+function payFromBalance(req, res, next) {
+  const { id } = req.params;
+  if (!id) {
+    res.status(200).json({ success: false, error: "invalid request" });
+    return;
+  }
+  payBalanceHandler(id)
+    .then(balance => res.status(200).json({ success: true, balance }))
+    .catch(err => next(err));
+}
+
+function payExemptByCompId(req, res, next) {
+  const { id } = req.params;
+  if (!id) {
+    res.status(200).json({ success: false, error: "invalid request" });
+    return;
+  }
+  payExemptHandler(req.params.id, req.body)
+    .then(balance => res.status(200).json({ success: true, balance }))
+    .catch(err => next(err));
+}
+
+function getBalance(req, res, next) {
+  const { id } = req.params;
+  if (!id) {
+    res.status(200).json({ success: false, error: "invalid request" });
+    return;
+  }
+  getBalanceHandler(id)
+    .then(balance => res.status(200).json({ success: true, balance }))
+    .catch(err => next(err));
+}
+
+function getAllSubscriptionByCompId(req, res, next) {
   const { compId } = req.params;
   if (!compId) {
     res.status(200).json({ success: false, error: "invalid request" });
     return;
   }
-  getSubscriptionByCompIdHandler(compId)
+  getSubscriptionByCompIdHandler(compId,req.query.page || 0, req.query.pageSize || 5)
     .then(subscription => res.status(200).json({ success: true, subscription }))
     .catch(err => next(err));
 }
@@ -109,7 +143,6 @@ function purchaseBySubscriptionId(req, res, next) {
       res.status(200).json({ success: true, subscriptions })
     )
     .catch(err => next(err));
-
 }
 
 async function addPaymentInformationHandler(payInfo) {
@@ -187,9 +220,9 @@ async function buyPlanHandler(data) {
   subscription["createdAt"] = subscription.createdAt
     ? subscription.createdAt
     : new Date()
-      .toISOString()
-      .split(".")[0]
-      .replace("T", " ");
+        .toISOString()
+        .split(".")[0]
+        .replace("T", " ");
   subscription["updatedAt"] = new Date()
     .toISOString()
     .split(".")[0]
@@ -270,7 +303,7 @@ async function getSubscriptionHandler(UserId, ApplicationId) {
   if (!appUser) {
     throw "user does not exist";
   }
- 
+
   const sub = await paymentService.getSubscription(
     appUser.CompanyId ? appUser.CompanyId : appUser.UserId
   );
@@ -282,7 +315,7 @@ async function getSubscriptionHandler(UserId, ApplicationId) {
   return sub;
 }
 
-async function getSubscriptionByIdHandler(id){
+async function getSubscriptionByIdHandler(id) {
   const sub = await paymentService.getSubscriptionTransactionById(id);
 
   if (!sub) {
@@ -291,13 +324,95 @@ async function getSubscriptionByIdHandler(id){
   return sub;
 }
 
-async function getSubscriptionByCompIdHandler(id){
-  const sub = await paymentService.getSubscriptionTransactionByCompanyId(id);
+async function getBalanceHandler(id) {
+  const balance = await paymentService.getBalanceByCompanyId(id);
+  if (balance) {
+    return balance;
+  } else {
+    return 0;
+  }
+}
 
+async function payExemptHandler(id, body) {
+  // console.log(body);
+  const subscriptions = await paymentService.getSubscriptionTransactionByCompanyId(
+    id
+  );
+  if (subscriptions) {
+    subscriptions.map(subs => {
+      // console.log(subs.amount);
+      if (!subs.paid) {
+        const update = paymentService.updateconfirmPaymentField(
+          subs.id,
+          1,
+          body.name,
+          subs.amount
+        );
+      }
+    });
+    return true;
+  }
+}
+
+async function payBalanceHandler(id) {
+  const balance = await paymentService.getBalanceByCompanyId(id);
+  // console.log(balance.balance);
+  if (balance) {
+    const subscriptions = await paymentService.getSubscriptionTransactionByCompanyId(
+      id
+    );
+    let countAmount = 0;
+    if (subscriptions) {
+      subscriptions.map(subs => {
+        // console.log(subs.amount);
+        if (!subs.paid) {
+          countAmount = countAmount + subs.amount - subs.paidAmount;
+        }
+      });
+      // console.log(countAmount);
+      if (parseInt(balance.balance) < parseInt(countAmount)) {
+        throw "In sufficient Balance";
+      } else if (parseInt(balance.balance) >= parseInt(countAmount)) {
+        subscriptions.map(subs => {
+          if (!subs.paid) {
+            const update = paymentService.updateconfirmPaymentField(
+              subs.id,
+              1,
+              "Admin",
+              subs.amount
+            );
+          }
+        });
+
+        let balanceBody = {};
+        balanceBody.balance = parseInt(balance.balance) - parseInt(countAmount);
+        balanceBody.CompanyId = id;
+        const balance1 = await paymentService.addAmountBalance(balanceBody);
+        return true;
+      }
+    }
+  }
+  // const balance = await paymentService.paySubsFromBalance(id);
+  // if(balance){
+  //   return balance
+  // }else{
+  //   return 0;
+  // }
+}
+
+async function getSubscriptionByCompIdHandler(id,offset,limit) {
+  // console.log(offset,limit)
+  const sub = await paymentService.getSubscriptionTransactionByCompanyId(id,offset,limit);
+  const total = await paymentService.getCountSubscriptionTransaction(id);
+ 
+  let totalItems;
+   if(total){
+    totalItems = Object.values(total[0])[0];
+  }
   if (!sub) {
     throw "use do not have subscription";
   }
-  return sub;
+  return {sub,total:totalItems};
 }
 
 async function getAllSubscriptionHanlder(ApplicationId) {
@@ -361,51 +476,109 @@ async function purchaseCV(subscriptionId) {
   const CVPOINT = 30;
   const subscription = await paymentService.getSubscriptionById(subscriptionId);
 
-  if ( subscription && subscription.type == "EXPRESS") {
+  if (subscription && subscription.type == "EXPRESS") {
     if (subscription.points > 31) {
       const points = parseInt(subscription.points) - parseInt(CVPOINT);
-      const updateSubscription = await paymentService.updateSubscriptionById(subscription.id,{points});
-      if(updateSubscription){
+      const updateSubscription = await paymentService.updateSubscriptionById(
+        subscription.id,
+        { points }
+      );
+      if (updateSubscription) {
         return updateSubscription;
       }
-   
     }
-  } else if ( subscription && subscription.type == "PREMIUM") {
-    const today = moment().format();  
+  } else if (subscription && subscription.type == "PREMIUM") {
+    const today = moment().format();
     if (subscription.expirationDate >= today) {
       return subscription;
     }
   }
-
 }
 function confirmPayment(req, res, next) {
-  confirmPaymentById(req.params.id)
-      .then(payment => payment ? res.status(200).json({ success: true, payment }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
-      .catch(err => next(err));
+  confirmPaymentById(req.params.id, req.body)
+    .then(payment =>
+      payment
+        ? res.status(200).json({ success: true, payment })
+        : res
+            .status(200)
+            .json({ success: false, error: "Something went wrong" })
+    )
+    .catch(err => next(err));
 }
 
-async function confirmPaymentById(id) {
-  const confirmPayment = await paymentService.getSubscriptionTransactionById(id);
-  console.log(confirmPayment)
-  if (confirmPayment.active) {
-      const confirm = await paymentService.updateconfirmPaymentField(id);
-      console.log(confirm)
-      if (confirm[0] > 0) {
-          return true;
-      }
-      return false
-  } else {
-      const confirm = await paymentService.updateconfirmPaymentField(id);
-      console.log(confirm)
-      if (confirm[0] > 0) {
-          return true;
-      }
-      return false
+function depositMoney(req, res, next) {
+  depositMoneyForCompany(req.body)
+    .then(deposit =>
+      deposit
+        ? res.status(200).json({ success: true, deposit })
+        : res
+            .status(200)
+            .json({ success: false, error: "Something went wrong" })
+    )
+    .catch(err => next(err));
+}
+
+async function depositMoneyForCompany(body) {
+  let balanceBody = {};
+  balanceBody.balance = body.body.amount;
+  balanceBody.CompanyId = body.compId;
+  const addBalance = await paymentService.addAmountBalance(balanceBody);
+  // console.log(addBalance)
+  if (addBalance) {
+    return addBalance;
   }
-  
-  if (confirmPayment) {
-      // console.log(user)
-      return confirmPayment;
+}
+
+async function confirmPaymentById(id, body) {
+  const confirmPayment = await paymentService.getSubscriptionTransactionById(
+    id
+  );
+  // console.log(confirmPayment);
+  let paidA = parseInt(confirmPayment.paidAmount) + parseInt(body.amount);
+  if (confirmPayment.amount == paidA) {
+    const confirm = await paymentService.updateconfirmPaymentField(
+      id,
+      1,
+      body.name,
+      paidA
+    );
+    if (confirm[0] > 0) {
+      return true;
+    }
+    return false;
+  } else if (parseInt(confirmPayment.amount) < paidA) {
+    throw "More than engough";
+    // let balance = paidA - parseInt(confirmPayment.amount);
+    // let paidLeft = confirmPayment.amount - confirmPayment.paidAmount;
+    // if (paidLeft != 0 && paidLeft > 0) {
+    //   const confirm = await paymentService.updateconfirmPaymentField(
+    //     id,
+    //     1,
+    //     body.name,
+    //     paidLeft
+    //   );
+    // }
+    // // let balanceBody = {};
+    // // balanceBody.balance = balance;
+    // // balanceBody.CompanyId = confirmPayment.paymentInformationId;
+
+    // // const addBalance = await paymentService.addAmountBalance(balanceBody);
+    // // if (addBalance || confirm[0] > 0) {
+    // //   return true;
+    // // }
+    // // return false;
+  } else {
+    const confirm = await paymentService.updateconfirmPaymentField(
+      id,
+      0,
+      body.name,
+      paidA
+    );
+    // console.log(confirm)
+    if (confirm[0] > 0) {
+      return true;
+    }
+    return false;
   }
 }
 module.exports = {
@@ -418,5 +591,9 @@ module.exports = {
   getAllSubscription,
   purchaseCV,
   purchaseBySubscriptionId,
-  confirmPayment
+  confirmPayment,
+  depositMoney,
+  getBalance,
+  payFromBalance,
+  payExemptByCompId
 };
