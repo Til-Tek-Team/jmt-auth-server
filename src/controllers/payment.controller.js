@@ -145,6 +145,7 @@ function getPaymentPlanTypes(req, res, next) {
     .catch(err => next(err));
 }
 
+
 function getPaymentPlanType(req, res, next) {
   if (!req.params.id) {
     throw "invalid request";
@@ -351,6 +352,19 @@ async function getSubscriptionHandler(UserId, ApplicationId) {
   }
 
   return sub;
+}
+
+async function getPaymentPlanTypesHandler() {
+  const payment_plan_types = await paymentService.getPaymentPlanTypes();
+  if (payment_plan_types) {
+    return payment_plan_types;
+  }
+}
+async function getPaymentPlanTypeHandler(id) {
+  const payment_paln_type = await paymentService.getPaymentTypeById(id);
+  if (payment_paln_type) {
+    return payment_paln_type;
+  }
 }
 
 async function getSubscriptionByIdHandler(id) {
@@ -577,6 +591,36 @@ async function confirmPaymentById(id, body) {
     return false;
   }
 }
+
+async function createPaymentPlanTypeHandler(plan_type) {
+  let new_plan_type = plan_type;
+  new_plan_type.valueInDays = plan_type.type == "PREMIUM" ? plan_type.value : 0;
+  new_plan_type.valueInPoints =
+    plan_type.type == "EXPRESS" ? plan_type.value : 0;
+  new_plan_type = await paymentService.createPaymentPlanType(new_plan_type);
+  new_plan_type.name = new_plan_type.name.toUpperCase();
+
+  if (new_plan_type) {
+    return new_plan_type;
+  }
+}
+
+async function updatePaymentPlanTypeHandler(plan_type) {
+  let new_plan_type = plan_type;
+  new_plan_type.valueInDays = plan_type.type == "PREMIUM" ? plan_type.value : 0;
+  new_plan_type.valueInPoints =
+    plan_type.type == "EXPRESS" ? plan_type.value : 0;
+  new_plan_type.name = new_plan_type.name.toUpperCase();
+  let db_plan_type = await paymentService.getPaymentTypeById(plan_type.id);
+  let updated_plan_type = await paymentService.updatePaymentPlanType(
+    db_plan_type,
+    new_plan_type
+  );
+  if (updated_plan_type) {
+    return updated_plan_type;
+  }
+}
+
 
 module.exports = {
   addPaymentInformation,
