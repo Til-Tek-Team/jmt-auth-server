@@ -71,17 +71,6 @@ function getAllSubscriptionById(req, res, next) {
     .catch(err => next(err));
 }
 
-function payFromBalance(req, res, next) {
-  const { id } = req.params;
-  if (!id) {
-    res.status(200).json({ success: false, error: "invalid request" });
-    return;
-  }
-  payBalanceHandler(id)
-    .then(balance => res.status(200).json({ success: true, balance }))
-    .catch(err => next(err));
-}
-
 function payExemptByCompId(req, res, next) {
   const { id } = req.params;
   if (!id) {
@@ -354,51 +343,7 @@ async function payExemptHandler(id, body) {
   }
 }
 
-async function payBalanceHandler(id) {
-  const balance = await paymentService.getBalanceByCompanyId(id);
-  // console.log(balance.balance);
-  if (balance) {
-    const subscriptions = await paymentService.getSubscriptionTransactionByCompanyId(
-      id
-    );
-    let countAmount = 0;
-    if (subscriptions) {
-      subscriptions.map(subs => {
-        // console.log(subs.amount);
-        if (!subs.paid) {
-          countAmount = countAmount + subs.amount - subs.paidAmount;
-        }
-      });
-      // console.log(countAmount);
-      if (parseInt(balance.balance) < parseInt(countAmount)) {
-        throw "In sufficient Balance";
-      } else if (parseInt(balance.balance) >= parseInt(countAmount)) {
-        subscriptions.map(subs => {
-          if (!subs.paid) {
-            const update = paymentService.updateconfirmPaymentField(
-              subs.id,
-              1,
-              "Admin",
-              subs.amount
-            );
-          }
-        });
 
-        let balanceBody = {};
-        balanceBody.balance = parseInt(balance.balance) - parseInt(countAmount);
-        balanceBody.CompanyId = id;
-        const balance1 = await paymentService.addAmountBalance(balanceBody);
-        return true;
-      }
-    }
-  }
-  // const balance = await paymentService.paySubsFromBalance(id);
-  // if(balance){
-  //   return balance
-  // }else{
-  //   return 0;
-  // }
-}
 
 async function getSubscriptionByCompIdHandler(id,offset,limit) {
   // console.log(offset,limit)
@@ -519,9 +464,11 @@ function depositMoney(req, res, next) {
 }
 
 async function depositMoneyForCompany(body) {
+  console.log(body)
   let balanceBody = {};
   balanceBody.balance = body.body.amount;
   balanceBody.CompanyId = body.compId;
+  balanceBody.UserId = body.userId;
   const addBalance = await paymentService.addAmountBalance(balanceBody);
   // console.log(addBalance)
   if (addBalance) {
@@ -594,6 +541,5 @@ module.exports = {
   confirmPayment,
   depositMoney,
   getBalance,
-  payFromBalance,
   payExemptByCompId
 };

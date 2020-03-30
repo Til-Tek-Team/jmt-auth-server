@@ -30,6 +30,14 @@ module.exports = function(sequelize, DataTypes) {
           model: "companies",
           key: "id"
         }
+      },
+      UserId: {
+        type: DataTypes.CHAR(36),
+        allowNull: true,
+        references: {
+          model: "users",
+          key: "id"
+        }
       }
     },
     {
