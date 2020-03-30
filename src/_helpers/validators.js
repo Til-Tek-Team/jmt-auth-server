@@ -29,6 +29,35 @@ function validateUser(data) {
   return valid;
 }
 
+function validatePlanType(planType) {
+  let valid = true;
+  const fields = ["type", "name", "value", "amount"];
+  const keys = _.keys(planType);
+  fields.map(field => {
+    if (keys.includes(field)) {
+      return;
+    }
+    valid = false;
+  });
+  if (!valid) {
+    return valid;
+  }
+
+  _.map(planType, (value, key) => {
+    if (key == "value" || key == "amount") {
+      if (!validator.isNumeric(value + "")) {
+        valid = false;
+      }
+    } else {
+      if (validator.isEmpty(value + "")) {
+        valid = false;
+      }
+    }
+  });
+
+  return valid;
+}
+
 function validatePaymentInformation(data) {
   let valid = true;
   const fields = [
@@ -75,5 +104,6 @@ function validatePaymentInformation(data) {
 
 module.exports = {
   validateUser,
-  validatePaymentInformation
+  validatePaymentInformation,
+  validatePlanType
 };

@@ -1,4 +1,7 @@
-const { validatePaymentInformation } = require("../_helpers/validators");
+const {
+  validatePaymentInformation,
+  validatePlanType
+} = require("../_helpers/validators");
 const uuid4 = require("uuid/v4");
 const paymentService = require("../services/payment.service");
 const userService = require("../services/user.service");
@@ -131,6 +134,52 @@ function purchaseBySubscriptionId(req, res, next) {
     .then(subscriptions =>
       res.status(200).json({ success: true, subscriptions })
     )
+    .catch(err => next(err));
+}
+
+function getPaymentPlanTypes(req, res, next) {
+  getPaymentPlanTypesHandler()
+    .then(payment_plan_types =>
+      res.status(200).json({ success: true, payment_plan_types })
+    )
+    .catch(err => next(err));
+}
+
+function getPaymentPlanType(req, res, next) {
+  if (!req.params.id) {
+    throw "invalid request";
+  }
+
+  getPaymentPlanTypeHandler(req.params.id)
+    .then(payment_plan_type => {
+      res.status(200).json({ success: true, payment_plan_type });
+    })
+    .catch(err => next(err));
+}
+
+function createPaymentPlanType(req, res, next) {
+  let valid = validatePlanType(req.body);
+
+  if (!valid) {
+    throw "invalid request";
+  }
+
+  createPaymentPlanTypeHandler(req.body)
+    .then(payment_plan_type => {
+      res.status(200).json({ success: true, payment_plan_type });
+    })
+    .catch(err => next(err));
+}
+
+function updatePaymentPlanType(req, res, next) {
+  if (!req.body.id) {
+    throw "invalid request";
+  }
+
+  updatePaymentPlanTypeHandler(req.body)
+    .then(payment_plan_type => {
+      res.status(200).json({ success: true, payment_plan_type });
+    })
     .catch(err => next(err));
 }
 
@@ -528,6 +577,7 @@ async function confirmPaymentById(id, body) {
     return false;
   }
 }
+
 module.exports = {
   addPaymentInformation,
   getUserPaymentInformations,
@@ -541,5 +591,9 @@ module.exports = {
   confirmPayment,
   depositMoney,
   getBalance,
-  payExemptByCompId
+  payExemptByCompId,
+  getPaymentPlanTypes,
+  createPaymentPlanType,
+  updatePaymentPlanType,
+  getPaymentPlanType
 };
