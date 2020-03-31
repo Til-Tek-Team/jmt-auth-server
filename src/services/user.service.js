@@ -17,10 +17,14 @@ function getUserById(id) {
 }
 
 function getApplicationUserById(id) {
-  return ApplicationUser.findOne({ where: { id } }).catch(err => console.log(err));
+  return ApplicationUser.findOne({ where: { id } }).catch(err =>
+    console.log(err)
+  );
 }
 function getApplicationUserByUserId(id) {
-  return ApplicationUser.findOne({ where: { userId:id } }).catch(err => console.log(err));
+  return ApplicationUser.findOne({ where: { userId: id } }).catch(err =>
+    console.log(err)
+  );
 }
 
 function updateUser(user, data) {
@@ -56,5 +60,5 @@ module.exports = {
   updateApplicationUser,
   getApplicationUserById,
   getApplicationUserByUserId,
-  getUserByUsername,
+  getUserByUserName
 };

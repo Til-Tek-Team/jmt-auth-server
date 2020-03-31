@@ -5,7 +5,9 @@ const {
   PaymentPlanTypes,
   Subscription,
   SubscriptionTransaction,
-  Company,Application,Balance
+  Company,
+  Application,
+  Balance
 } = require("../models");
 
 function getApplicationUserByUserId(UserId) {
@@ -40,8 +42,8 @@ function updateAppUser(user, data) {
   return user.update(data).catch(err => console.log(err));
 }
 
-function getPaymentType(name) {
-  return PaymentPlanTypes.findOne({ where: { name } }).catch(err =>
+function getPaymentType(name, type) {
+  return PaymentPlanTypes.findOne({ where: { name, type } }).catch(err =>
     console.log(err)
   );
 }
@@ -80,24 +82,25 @@ function getSubscriptionTransactionById(id) {
   }).catch(err => console.log(err));
 }
 
-function getCountSubscriptionTransaction(companyId){
-  let query = `SELECT count(*) as count FROM view_payment_transcation t left join subscription_transactions sb on sb.id = t.transactionId WHERE t.CompanyId='${companyId}'`
+function getCountSubscriptionTransaction(companyId) {
+  let query = `SELECT count(*) as count FROM view_payment_transcation t left join subscription_transactions sb on sb.id = t.transactionId WHERE t.CompanyId='${companyId}'`;
   // let query = `select * from view_payment_transcation left join  where CompanyId = '${companyId}'`
-  return sequelize.query(query,
-    { type: sequelize.QueryTypes.SELECT }
-  ).catch(err => console.log(err));
+  return sequelize
+    .query(query, { type: sequelize.QueryTypes.SELECT })
+    .catch(err => console.log(err));
 }
 
-function getSubscriptionTransactionByCompanyId(companyId,offset,limit){
-  let query = `SELECT t.credit as credit,t.debit as debit,t.type, sb.transactionFrom,sb.transactionTo,t.CompanyId,t.transactionDate,sb.paidBy FROM view_payment_transcation t left join subscription_transactions sb on sb.id = t.transactionId WHERE t.CompanyId='${companyId}' order by transactionDate Desc  limit ${offset},${limit}`
+function getSubscriptionTransactionByCompanyId(companyId, offset, limit) {
+  let query = `SELECT t.credit as credit,t.debit as debit,t.type, sb.transactionFrom,sb.transactionTo,t.CompanyId,t.transactionDate,sb.paidBy FROM view_payment_transcation t left join subscription_transactions sb on sb.id = t.transactionId WHERE t.CompanyId='${companyId}' order by transactionDate Desc  limit ${offset},${limit}`;
   // let query = `select * from view_payment_transcation left join  where CompanyId = '${companyId}'`
-  
-  return sequelize.query(query,
-    { type: sequelize.QueryTypes.SELECT }
-  ).catch(err => console.log(err));
+
+  return sequelize
+    .query(query, { type: sequelize.QueryTypes.SELECT })
+    .catch(err => console.log(err));
 }
 
 function addSubscriptionTransaction(subscriptionTrans) {
+  console.log(subscriptionTrans);
   return SubscriptionTransaction.create(subscriptionTrans).catch(err =>
     console.log(err)
   );
@@ -115,25 +118,26 @@ function updateApplicationUser(appUser, data) {
   return appUser.update(data).catch(err => console.log(err));
 }
 
-function updateconfirmPaymentField(id,paid,name,amount){
-  return SubscriptionTransaction.update({paid:paid,paidBy:name,paidAmount:amount},{where: { id }}).catch(err => console.log(err));
-}
-
-function addAmountBalance(balance){
-  return Balance.create(balance).catch(err => console.log(err));
-}
-
-function getBalanceByCompanyId(compId){
-  let query = `select sum(credit) as balance,sum(debit) as purchased from view_payment_transcation where CompanyId ='${compId}'`;
-  return sequelize.query(query,
-    { type: sequelize.QueryTypes.SELECT }
+function updateconfirmPaymentField(id, paid, name, amount) {
+  return SubscriptionTransaction.update(
+    { paid: paid, paidBy: name, paidAmount: amount },
+    { where: { id } }
   ).catch(err => console.log(err));
 }
 
+function addAmountBalance(balance) {
+  return Balance.create(balance).catch(err => console.log(err));
+}
 
+function getBalanceByCompanyId(compId) {
+  let query = `select sum(credit) as balance,sum(debit) as purchased from view_payment_transcation where CompanyId ='${compId}'`;
+  return sequelize
+    .query(query, { type: sequelize.QueryTypes.SELECT })
+    .catch(err => console.log(err));
+}
 
-function depositMoney(account,data){
-  return account.update({balance:data}).catch(err => console.log(err))
+function depositMoney(account, data) {
+  return account.update({ balance: data }).catch(err => console.log(err));
 }
 function addCompany(company) {
   return Company.create(company).catch(err => console.log(err));

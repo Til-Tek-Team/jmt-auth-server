@@ -34,6 +34,11 @@ module.exports = function(sequelize, DataTypes) {
         type: DataTypes.BOOLEAN,
         defaultValue: true
       },
+      transactionMadeBy: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: null
+      },
       applicationUserId: {
         type: DataTypes.INTEGER(11),
         allowNull: true,

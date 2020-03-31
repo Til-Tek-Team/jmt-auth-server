@@ -468,7 +468,7 @@ async function isEmailUnique(email) {
 }
 
 async function isUsernameUnique(username) {
-  const foundUsername = await userService.getUserByUsername(username);
+  const foundUsername = await userService.getUserByUserName(username);
   if (foundUsername) {
     return false;
   }
@@ -514,7 +514,7 @@ async function addCompanyProfileHandler(company) {
     company.user_id,
     company.applicationApplicationId
   );
-  
+
   if (!appUser) {
     throw "user is not found";
   }
@@ -533,7 +533,7 @@ async function addCompanyProfileHandler(company) {
   paymentInfo.currencyType = "peso";
   paymentInfo.createdAt = new Date();
   paymentInfo.updatedAt = new Date();
-  console.log(paymentInfo,'nfo')
+  console.log(paymentInfo, "nfo");
   const addCompany = await paymentService.addCompany(company);
   const updatedUser = await paymentService.updateApplicationUser(appUser, {
     ...appUser.dataValues,
