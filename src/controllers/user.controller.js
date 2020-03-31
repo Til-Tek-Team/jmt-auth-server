@@ -231,7 +231,7 @@ function checkUsername(req, res, next) {
 }
 
 async function loginHandler(email, password) {
-  let user = await userService.getUserByUserName(email);
+  let user = await userService.getUserByUsername(email);
   if (!user) {
     throw "email or password incorrect";
   }

@@ -57,4 +57,5 @@ module.exports = {
   getApplicationUserById,
   getApplicationUserByUserId,
   getUserByUsername,
+  getUserByUserName
 };
