@@ -106,11 +106,11 @@ function addSubscriptionTransaction(subscriptionTrans) {
   );
 }
 
-function getAllSubscription(ApplicationId) {
-  return SubscriptionTransaction.findAll({
+function getAllSubscription(ApplicationId,offset,limit) {
+  return SubscriptionTransaction.findAndCountAll({
     include: [
       { model: ApplicationUser, include: [{ model: User }, { model: Company }] }
-    ]
+    ],offset,limit
   }).catch(err => console.log(err));
 }
 

@@ -551,7 +551,7 @@ async function addCompanyProfileHandler(company) {
 }
 
 async function checkUsernameHandler(username) {
-  let user = await userService.getUserByUsername(username);
+  let user = await userService.getUserByUserName(username);
   if (user) {
     return false;
   }

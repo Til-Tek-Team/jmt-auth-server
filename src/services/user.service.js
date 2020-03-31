@@ -47,10 +47,6 @@ function updateApplicationUser(UserId) {
     .catch(err => console.log(err));
 }
 
-function getUserByUsername(username) {
-  return User.findOne({ where: { username } }).catch(err => console.log(err));
-}
-
 module.exports = {
   createUser,
   getUserByEmail,

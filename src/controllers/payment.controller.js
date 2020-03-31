@@ -119,7 +119,7 @@ function getAllSubscription(req, res, next) {
     return;
   }
 
-  getAllSubscriptionHanlder(ApplicationId)
+  getAllSubscriptionHanlder(ApplicationId,req.query.page || 0,req.query.pageSize || 6)
     .then(subscriptions =>
       res.status(200).json({ success: true, subscriptions })
     )
@@ -430,8 +430,9 @@ async function getSubscriptionByCompIdHandler(id, offset, limit) {
   return { sub, total: totalItems };
 }
 
-async function getAllSubscriptionHanlder(ApplicationId) {
-  const subscriptions = await paymentService.getAllSubscription(ApplicationId);
+async function getAllSubscriptionHanlder(ApplicationId,offset,limit) {
+  console.log(offset,limit)
+  const subscriptions = await paymentService.getAllSubscription(ApplicationId,parseInt(offset),parseInt(limit));
 
   if (!subscriptions) {
     throw "something went wrong";
