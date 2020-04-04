@@ -272,7 +272,7 @@ async function signUpHandler(user) {
     throw "something went wrong";
   }
 
-  if (user.APPLICATION == "TRABAHANAP" || user.APPLICATION == "MSP") {
+  if (user.APPLICATION == "TRABAHANAP" || user.APPLICATION == "MSP" || user.APPLICATION == "JOBDOR") {
     const applicationUser = await userService.addApplicationUser(
       createdUser.id,
       user.APPLICATION,
