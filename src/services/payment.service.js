@@ -91,7 +91,7 @@ function getCountSubscriptionTransaction(companyId) {
 }
 
 function getSubscriptionTransactionByCompanyId(companyId, offset, limit) {
-  let query = `SELECT t.credit as credit,t.debit as debit,t.type, sb.transactionFrom,sb.transactionTo,t.CompanyId,t.transactionDate,sb.paidBy FROM view_payment_transcation t left join subscription_transactions sb on sb.id = t.transactionId WHERE t.CompanyId='${companyId}' order by transactionDate Desc  limit ${offset},${limit}`;
+  let query = `SELECT t.credit as credit,t.debit as debit,t.type,t.name, sb.transactionFrom,sb.transactionTo,t.CompanyId,t.transactionDate,sb.paidBy FROM view_payment_transcation t left join subscription_transactions sb on sb.id = t.transactionId WHERE t.CompanyId='${companyId}' order by transactionDate Desc  limit ${offset},${limit}`;
   // let query = `select * from view_payment_transcation left join  where CompanyId = '${companyId}'`
 
   return sequelize
@@ -104,6 +104,20 @@ function addSubscriptionTransaction(subscriptionTrans) {
   return SubscriptionTransaction.create(subscriptionTrans).catch(err =>
     console.log(err)
   );
+}
+
+function getCompainesWithSubscirption(ApplicationId,offset,limit){
+  let query = `select * from view_compaines_list_subscription where SubscriptionId IS NOT NULL limit ${offset}, ${limit}`;
+  return sequelize
+    .query(query, { type: sequelize.QueryTypes.SELECT })
+    .catch(err => console.log(err));
+}
+
+function countGetCompainesWithSubscirption(){
+  let query = `select count(*) as count from view_compaines_list_subscription where SubscriptionId IS NOT NULL`;
+  return sequelize
+    .query(query, { type: sequelize.QueryTypes.SELECT })
+    .catch(err => console.log(err));
 }
 
 function getAllSubscription(ApplicationId,offset,limit) {
@@ -190,5 +204,7 @@ module.exports = {
   getPaymentPlanTypes,
   createPaymentPlanType,
   updatePaymentPlanType,
-  getPaymentTypeById
+  getPaymentTypeById,
+  getCompainesWithSubscirption,
+  countGetCompainesWithSubscirption
 };

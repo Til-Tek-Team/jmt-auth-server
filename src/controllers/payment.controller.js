@@ -432,13 +432,14 @@ async function getSubscriptionByCompIdHandler(id, offset, limit) {
 
 async function getAllSubscriptionHanlder(ApplicationId,offset,limit) {
   console.log(offset,limit)
-  const subscriptions = await paymentService.getAllSubscription(ApplicationId,parseInt(offset),parseInt(limit));
+  const subscriptions = await paymentService.getCompainesWithSubscirption(ApplicationId,parseInt(offset),parseInt(limit));
 
   if (!subscriptions) {
     throw "something went wrong";
   }
-
-  return subscriptions;
+  const total = await paymentService.countGetCompainesWithSubscirption();
+  totalItems = Object.values(total[0])[0];
+  return {subscriptions,total:totalItems};
 }
 
 async function checkCardUnique(creditCardNumber, ownerReference) {
