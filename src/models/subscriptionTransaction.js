@@ -1,6 +1,6 @@
 /* jshint indent: 2 */
 
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   return sequelize.define(
     "subscription_transactions",
     {
@@ -8,56 +8,61 @@ module.exports = function(sequelize, DataTypes) {
         primaryKey: true,
         type: DataTypes.UUID,
         allowNull: false,
-        defaultValue: DataTypes.UUIDV4
+        defaultValue: DataTypes.UUIDV4,
       },
       transactionFrom: {
         type: DataTypes.STRING(255),
-        allowNull: false
+        allowNull: false,
       },
       transactionTo: {
         type: DataTypes.STRING(255),
-        allowNull: false
+        allowNull: false,
       },
       amount: {
         type: DataTypes.INTEGER(11),
-        allowNull: false
+        allowNull: false,
       },
       createdAt: {
         type: DataTypes.DATE,
-        allowNull: false
+        allowNull: false,
       },
       updatedAt: {
         type: DataTypes.DATE,
-        allowNull: false
+        allowNull: false,
       },
       paid: {
         type: DataTypes.BOOLEAN,
-        defaultValue: true
+        defaultValue: true,
+      },
+      transaction_type: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        defaultValue: "PURCHASED",
       },
       transactionMadeBy: {
         type: DataTypes.STRING,
         allowNull: true,
-        defaultValue: null
+        defaultValue: null,
       },
       applicationUserId: {
         type: DataTypes.INTEGER(11),
         allowNull: true,
         references: {
           model: "application_users",
-          key: "id"
-        }
+          key: "id",
+        },
       },
       paymentInformationId: {
         type: DataTypes.CHAR(36),
         allowNull: true,
         references: {
           model: "payment_informations",
-          key: "id"
-        }
-      }
+          key: "id",
+        },
+      },
     },
     {
-      tableName: "subscription_transactions"
+      tableName: "subscription_transactions",
     }
   );
 };

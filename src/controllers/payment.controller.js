@@ -1,6 +1,6 @@
 const {
   validatePaymentInformation,
-  validatePlanType
+  validatePlanType,
 } = require("../_helpers/validators");
 const uuid4 = require("uuid/v4");
 const paymentService = require("../services/payment.service");
@@ -16,10 +16,10 @@ function addPaymentInformation(req, res, next) {
   }
 
   addPaymentInformationHandler(payInfo)
-    .then(payment_information =>
+    .then((payment_information) =>
       res.status(200).json({ success: true, payment_information })
     )
-    .catch(err => next(err));
+    .catch((err) => next(err));
 }
 
 function getUserPaymentInformations(req, res, next) {
@@ -30,10 +30,10 @@ function getUserPaymentInformations(req, res, next) {
   }
 
   getUserPaymentInformationsHandler(userId)
-    .then(payment_informations =>
+    .then((payment_informations) =>
       res.status(200).json({ success: true, payment_informations })
     )
-    .catch(err => next(err));
+    .catch((err) => next(err));
 }
 
 function buyPlan(req, res, next) {
@@ -45,8 +45,10 @@ function buyPlan(req, res, next) {
   }
 
   buyPlanHandler(req.body)
-    .then(subscription => res.status(200).json({ success: true, subscription }))
-    .catch(err => next(err));
+    .then((subscription) =>
+      res.status(200).json({ success: true, subscription })
+    )
+    .catch((err) => next(err));
 }
 
 function getSubscription(req, res, next) {
@@ -58,8 +60,10 @@ function getSubscription(req, res, next) {
   }
 
   getSubscriptionHandler(UserId, ApplicationId)
-    .then(subscription => res.status(200).json({ success: true, subscription }))
-    .catch(err => next(err));
+    .then((subscription) =>
+      res.status(200).json({ success: true, subscription })
+    )
+    .catch((err) => next(err));
 }
 
 function getAllSubscriptionById(req, res, next) {
@@ -70,8 +74,10 @@ function getAllSubscriptionById(req, res, next) {
   }
   // console.log(id)
   getSubscriptionByIdHandler(id)
-    .then(subscription => res.status(200).json({ success: true, subscription }))
-    .catch(err => next(err));
+    .then((subscription) =>
+      res.status(200).json({ success: true, subscription })
+    )
+    .catch((err) => next(err));
 }
 
 function payExemptByCompId(req, res, next) {
@@ -81,8 +87,8 @@ function payExemptByCompId(req, res, next) {
     return;
   }
   payExemptHandler(req.params.id, req.body)
-    .then(balance => res.status(200).json({ success: true, balance }))
-    .catch(err => next(err));
+    .then((balance) => res.status(200).json({ success: true, balance }))
+    .catch((err) => next(err));
 }
 
 function getBalance(req, res, next) {
@@ -92,8 +98,8 @@ function getBalance(req, res, next) {
     return;
   }
   getBalanceHandler(id)
-    .then(balance => res.status(200).json({ success: true, balance }))
-    .catch(err => next(err));
+    .then((balance) => res.status(200).json({ success: true, balance }))
+    .catch((err) => next(err));
 }
 
 function getAllSubscriptionByCompId(req, res, next) {
@@ -107,8 +113,10 @@ function getAllSubscriptionByCompId(req, res, next) {
     req.query.page || 0,
     req.query.pageSize || 5
   )
-    .then(subscription => res.status(200).json({ success: true, subscription }))
-    .catch(err => next(err));
+    .then((subscription) =>
+      res.status(200).json({ success: true, subscription })
+    )
+    .catch((err) => next(err));
 }
 
 function getAllSubscription(req, res, next) {
@@ -119,11 +127,15 @@ function getAllSubscription(req, res, next) {
     return;
   }
 
-  getAllSubscriptionHanlder(ApplicationId,req.query.page || 0,req.query.pageSize || 6)
-    .then(subscriptions =>
+  getAllSubscriptionHanlder(
+    ApplicationId,
+    req.query.page || 0,
+    req.query.pageSize || 6
+  )
+    .then((subscriptions) =>
       res.status(200).json({ success: true, subscriptions })
     )
-    .catch(err => next(err));
+    .catch((err) => next(err));
 }
 
 function purchaseBySubscriptionId(req, res, next) {
@@ -135,18 +147,18 @@ function purchaseBySubscriptionId(req, res, next) {
   }
 
   purchaseCV(subscriptionId)
-    .then(subscriptions =>
+    .then((subscriptions) =>
       res.status(200).json({ success: true, subscriptions })
     )
-    .catch(err => next(err));
+    .catch((err) => next(err));
 }
 
 function getPaymentPlanTypes(req, res, next) {
   getPaymentPlanTypesHandler()
-    .then(payment_plan_types =>
+    .then((payment_plan_types) =>
       res.status(200).json({ success: true, payment_plan_types })
     )
-    .catch(err => next(err));
+    .catch((err) => next(err));
 }
 
 function getPaymentPlanType(req, res, next) {
@@ -155,10 +167,10 @@ function getPaymentPlanType(req, res, next) {
   }
 
   getPaymentPlanTypeHandler(req.params.id)
-    .then(payment_plan_type => {
+    .then((payment_plan_type) => {
       res.status(200).json({ success: true, payment_plan_type });
     })
-    .catch(err => next(err));
+    .catch((err) => next(err));
 }
 
 function createPaymentPlanType(req, res, next) {
@@ -169,10 +181,10 @@ function createPaymentPlanType(req, res, next) {
   }
 
   createPaymentPlanTypeHandler(req.body)
-    .then(payment_plan_type => {
+    .then((payment_plan_type) => {
       res.status(200).json({ success: true, payment_plan_type });
     })
-    .catch(err => next(err));
+    .catch((err) => next(err));
 }
 
 function updatePaymentPlanType(req, res, next) {
@@ -181,10 +193,10 @@ function updatePaymentPlanType(req, res, next) {
   }
 
   updatePaymentPlanTypeHandler(req.body)
-    .then(payment_plan_type => {
+    .then((payment_plan_type) => {
       res.status(200).json({ success: true, payment_plan_type });
     })
-    .catch(err => next(err));
+    .catch((err) => next(err));
 }
 
 async function addPaymentInformationHandler(payInfo) {
@@ -207,7 +219,7 @@ async function addPaymentInformationHandler(payInfo) {
 
   // payInfo.id = uuid4();
   const updatedUser = await paymentService.updateAppUser(user, {
-    PaymentIdentifier: payInfo.ownerReference
+    PaymentIdentifier: payInfo.ownerReference,
   });
   const paymentInformation = await paymentService.addPaymentInformation(
     payInfo
@@ -241,8 +253,15 @@ async function getUserPaymentInformationsHandler(userId) {
 
 async function buyPlanHandler(data) {
   const user = await paymentService.getApplicationUserByUserId(data.UserId);
-  if (!user) {
+  const u = await userService.getUserById(data.UserId);
+  if (!user || !u) {
     throw "user does not exist";
+  }
+
+  let fromEmployer = u.username == data.transactionMadeBy;
+  let transaction_type = "PURCHASED";
+  if (!fromEmployer) {
+    transaction_type = "GRANTED";
   }
 
   const PaymentIdentifier = user.CompanyId ? user.CompanyId : user.UserId;
@@ -260,10 +279,7 @@ async function buyPlanHandler(data) {
   subscription["PaymentId"] = PaymentIdentifier;
   subscription["createdAt"] = subscription.createdAt
     ? subscription.createdAt
-    : new Date()
-        .toISOString()
-        .split(".")[0]
-        .replace("T", " ");
+    : new Date().toISOString().split(".")[0].replace("T", " ");
   subscription["updatedAt"] = new Date()
     .toISOString()
     .split(".")[0]
@@ -280,10 +296,7 @@ async function buyPlanHandler(data) {
     subscription["expirationDate"] =
       subscription.expirationDate &&
       subscription.expirationDate >
-        new Date()
-          .toISOString()
-          .split(".")[0]
-          .replace("T", " ")
+        new Date().toISOString().split(".")[0].replace("T", " ")
         ? new Date(
             new Date(subscription.expirationDate).getTime() +
               24 * 60 * 60 * 1000 * payType.valueInDays
@@ -313,7 +326,8 @@ async function buyPlanHandler(data) {
       user.id,
       PaymentIdentifier,
       payType.amount,
-      data.transactionMadeBy
+      data.transactionMadeBy,
+      transaction_type
     );
     newSub = await paymentService.updateSubscription(
       tempSub,
@@ -326,13 +340,23 @@ async function buyPlanHandler(data) {
       user.id,
       PaymentIdentifier,
       payType.amount,
-      data.transactionMadeBy
+      data.transactionMadeBy,
+      transaction_type
     );
     newSub = await paymentService.addSubscription(subscription);
   }
 
   if (!newSub || !trans) {
     throw "something went wrong";
+  }
+
+  if (!fromEmployer) {
+    let balanceBody = {};
+    balanceBody.balance = payType.amount;
+    balanceBody.CompanyId = user.CompanyId;
+    balanceBody.UserId = user.UserId;
+    const addBalance = await paymentService.addAmountBalance(balanceBody);
+    console.log(addBalance);
   }
 
   return newSub;
@@ -396,7 +420,7 @@ async function payExemptHandler(id, body) {
     id
   );
   if (subscriptions) {
-    subscriptions.map(subs => {
+    subscriptions.map((subs) => {
       // console.log(subs.amount);
       if (!subs.paid) {
         const update = paymentService.updateconfirmPaymentField(
@@ -456,9 +480,11 @@ async function addSubscriptionTransaction(
   UserId,
   PaymentId,
   amount,
-  transactionMadeBy
+  transactionMadeBy,
+  transaction_type
 ) {
   let subTransaction = {};
+  subTransaction.transaction_type = transaction_type;
   subTransaction.transactionFrom = oldSub
     ? oldSub.type == "EXPRESS"
       ? oldSub.expressType
@@ -518,26 +544,26 @@ async function purchaseCV(subscriptionId) {
 }
 function confirmPayment(req, res, next) {
   confirmPaymentById(req.params.id, req.body)
-    .then(payment =>
+    .then((payment) =>
       payment
         ? res.status(200).json({ success: true, payment })
         : res
             .status(200)
             .json({ success: false, error: "Something went wrong" })
     )
-    .catch(err => next(err));
+    .catch((err) => next(err));
 }
 
 function depositMoney(req, res, next) {
   depositMoneyForCompany(req.body)
-    .then(deposit =>
+    .then((deposit) =>
       deposit
         ? res.status(200).json({ success: true, deposit })
         : res
             .status(200)
             .json({ success: false, error: "Something went wrong" })
     )
-    .catch(err => next(err));
+    .catch((err) => next(err));
 }
 
 async function depositMoneyForCompany(body) {
@@ -658,5 +684,5 @@ module.exports = {
   getPaymentPlanTypes,
   createPaymentPlanType,
   updatePaymentPlanType,
-  getPaymentPlanType
+  getPaymentPlanType,
 };
