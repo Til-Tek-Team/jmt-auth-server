@@ -23,6 +23,10 @@ module.exports = function(sequelize, DataTypes) {
         type: DataTypes.DATE,
         allowNull: false
       },
+      type: {
+        type: DataTypes.CHAR(36),
+        allowNull: false
+      },
       CompanyId: {
         type: DataTypes.CHAR(36),
         allowNull: true,

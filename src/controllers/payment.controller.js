@@ -355,6 +355,7 @@ async function buyPlanHandler(data) {
     balanceBody.balance = payType.amount;
     balanceBody.CompanyId = user.CompanyId;
     balanceBody.UserId = user.UserId;
+    balanceBody.type = 'GRANTED'
     const addBalance = await paymentService.addAmountBalance(balanceBody);
     console.log(addBalance);
   }

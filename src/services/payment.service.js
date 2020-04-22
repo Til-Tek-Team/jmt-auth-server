@@ -105,14 +105,14 @@ function getSubscriptionTransactionByCompanyId(companyId, offset, limit) {
 }
 
 function addSubscriptionTransaction(subscriptionTrans) {
-  console.log(subscriptionTrans);
+  // console.log(subscriptionTrans);
   return SubscriptionTransaction.create(subscriptionTrans).catch((err) =>
     console.log(err)
   );
 }
 
 function getCompainesWithSubscirption(ApplicationId,offset,limit){
-  let query = `select * from view_compaines_list_subscription where SubscriptionId IS NOT NULL limit ${offset}, ${limit}`;
+  let query = `select * from view_compaines_list_subscription where SubscriptionId IS NOT NULL order by subsUpdatedAt desc limit ${offset}, ${limit}`;
   return sequelize
     .query(query, { type: sequelize.QueryTypes.SELECT })
     .catch(err => console.log(err));
