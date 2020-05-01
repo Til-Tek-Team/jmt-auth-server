@@ -44,7 +44,17 @@ function verifyToken(req, res, next) {
     .then(user => res.status(200).json({ success: true, user }))
     .catch(err => next(err));
 }
+function getUnverifiedUser(req, res, next) {
+  getUnverifiedUserByDate(req.query.startDate, req.query.endDate, req.query.offset || 0, req.query.limit || 8)
+    .then(user => user ? res.status(200).json({ success: true, user }) : res.status(200).json({ success: false, error: 'Somethin went wrong' }))
+    .catch(err => next("Internal Server Error! Try again"));
+}
 
+function getUnverifiedUserDate(req, res, next) {
+  getUnverifiedUserByDateOnly(req.query.startDate, req.query.endDate)
+    .then(user => user ? res.status(200).json({ success: true, user }) : res.status(200).json({ success: false, error: 'Somethin went wrong ' }))
+    .catch(err => next("Internal Server Error! Try again"));
+}
 function verifyEmail(req, res, next) {
   const token = req.body.token;
   if (!token) {
@@ -299,6 +309,32 @@ async function verifyTokenHandler(token) {
   return decoded;
 }
 
+async function getUnverifiedUserByDateOnly(startDate, endDate) {
+  const users = await userService.getUnverifiedUserByDateOnly(startDate, endDate);
+
+  let user = users.map(
+     items => {
+      const token = jwt.sign({ sub: items.id }, CONSTANTS.JWTEMAILSECRET);
+      let createToken =  tokenService.createToken({ token });
+       items['emailVerificationToken'] = token
+      return items;
+    }
+  )
+
+  if (user) {
+    return user;
+  }
+}
+
+async function getUnverifiedUserByDate(startDate, endDate, offset, limit) {
+  const users = await userService.getUnverifiedUserByDate(startDate, endDate, parseInt(offset) || 0, parseInt(limit) || 8);
+  console.log(users);
+  if (users) {
+    const countUsers = await userService.countUnverifiedUser(startDate, endDate);
+    let total = Object.values(countUsers[0])[0];
+    return { users, total };
+  }
+}
 async function verifyEmailHandler(token) {
   let retriveToken = await tokenService.getToken(token);
   // console.log("retrived token value", retriveToken);
@@ -574,5 +610,7 @@ module.exports = {
   setPassword,
   updateUser,
   addCmpanyProfile,
-  checkUsername
+  checkUsername,
+  getUnverifiedUser,
+  getUnverifiedUserDate
 };
