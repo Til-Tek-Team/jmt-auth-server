@@ -16,8 +16,8 @@ function login(req, res, next) {
   }
 
   loginHandler(email, password)
-    .then(user => res.status(200).json({ success: true, user }))
-    .catch(err => next(err));
+    .then((user) => res.status(200).json({ success: true, user }))
+    .catch((err) => next(err));
 }
 
 function signUp(req, res, next) {
@@ -30,8 +30,8 @@ function signUp(req, res, next) {
   }
 
   signUpHandler(user)
-    .then(user => res.status(200).json({ success: true, user }))
-    .catch(err => next(err));
+    .then((user) => res.status(200).json({ success: true, user }))
+    .catch((err) => next(err));
 }
 
 function verifyToken(req, res, next) {
@@ -41,8 +41,8 @@ function verifyToken(req, res, next) {
     return;
   }
   verifyTokenHandler(token)
-    .then(user => res.status(200).json({ success: true, user }))
-    .catch(err => next(err));
+    .then((user) => res.status(200).json({ success: true, user }))
+    .catch((err) => next(err));
 }
 
 function verifyEmail(req, res, next) {
@@ -51,8 +51,8 @@ function verifyEmail(req, res, next) {
   }
 
   verifyEmailHandler(token)
-    .then(user => res.status(200).json({ success: true, user }))
-    .catch(err => next(err));
+    .then((user) => res.status(200).json({ success: true, user }))
+    .catch((err) => next(err));
 }
 
 function changePasswordRequest(req, res, next) {
@@ -63,10 +63,10 @@ function changePasswordRequest(req, res, next) {
   }
 
   changePasswordRequestHundler(userId)
-    .then(changePasswordToken =>
+    .then((changePasswordToken) =>
       res.status(200).json({ success: true, changePasswordToken })
     )
-    .catch(err => next(err));
+    .catch((err) => next(err));
 }
 
 function changePassword(req, res, next) {
@@ -85,7 +85,7 @@ function changePassword(req, res, next) {
 
   changePasswordHandler(id, password)
     .then(() => res.status(200).json({ success: true }))
-    .catch(err => next(err));
+    .catch((err) => next(err));
 }
 
 function getUser(req, res, next) {
@@ -95,8 +95,8 @@ function getUser(req, res, next) {
   }
 
   getUserHandler(email)
-    .then(user => res.status(200).json({ success: true, user }))
-    .catch(err => next(err));
+    .then((user) => res.status(200).json({ success: true, user }))
+    .catch((err) => next(err));
 }
 
 function socialSignup(req, res, next) {
@@ -107,7 +107,7 @@ function socialSignup(req, res, next) {
     phoneNumber,
     socialId,
     APPLICATION,
-    role
+    role,
   } = req.body;
 
   if (
@@ -127,10 +127,10 @@ function socialSignup(req, res, next) {
     phoneNumber,
     socialId,
     APPLICATION,
-    role
+    role,
   })
-    .then(user => res.status(200).json({ success: true, user }))
-    .catch(err => next(err));
+    .then((user) => res.status(200).json({ success: true, user }))
+    .catch((err) => next(err));
 }
 
 function socialLogin(req, res, next) {
@@ -140,8 +140,8 @@ function socialLogin(req, res, next) {
   }
 
   socialLoginHandler(req.body)
-    .then(user => res.status(200).json({ success: true, user }))
-    .catch(err => next(err));
+    .then((user) => res.status(200).json({ success: true, user }))
+    .catch((err) => next(err));
 }
 
 function updatePassword(req, res, next) {
@@ -152,8 +152,8 @@ function updatePassword(req, res, next) {
   }
 
   updatePasswordHandler(id, oldPassword, newPassword)
-    .then(success => res.status(200).json({ success }))
-    .catch(err => next(err));
+    .then((success) => res.status(200).json({ success }))
+    .catch((err) => next(err));
 }
 
 function getUserByEmail(req, res, next) {
@@ -163,9 +163,11 @@ function getUserByEmail(req, res, next) {
     return res.status(200).json({ success: false, error: "invalid request" });
   }
 
+  // console.log("this is the user name ------------------>", email);
+
   getUserByEmailHandler(email)
-    .then(user => res.status(200).json({ success: true, user }))
-    .catch(err => next(err));
+    .then((user) => res.status(200).json({ success: true, user }))
+    .catch((err) => next(err));
 }
 
 function setPassword(req, res, next) {
@@ -177,8 +179,8 @@ function setPassword(req, res, next) {
   }
 
   setPasswordHandler(email, password)
-    .then(success => res.status(200).json({ success }))
-    .catch(err => next(err));
+    .then((success) => res.status(200).json({ success }))
+    .catch((err) => next(err));
 }
 
 function updateUser(req, res, next) {
@@ -189,8 +191,8 @@ function updateUser(req, res, next) {
   }
 
   updateUserHandler({ firstName, lastName, phoneNumber, id })
-    .then(user => res.status(200).json({ success: true, user }))
-    .catch(err => next(err));
+    .then((user) => res.status(200).json({ success: true, user }))
+    .catch((err) => next(err));
 }
 
 function addCmpanyProfile(req, res, next) {
@@ -201,7 +203,7 @@ function addCmpanyProfile(req, res, next) {
     address,
     industryType,
     applicationApplicationId,
-    user_id
+    user_id,
   } = company;
   if (
     !id ||
@@ -215,8 +217,8 @@ function addCmpanyProfile(req, res, next) {
   }
 
   addCompanyProfileHandler(company)
-    .then(company => res.status(200).json({ success: true, company }))
-    .catch(err => next(err));
+    .then((company) => res.status(200).json({ success: true, company }))
+    .catch((err) => next(err));
 }
 
 function checkUsername(req, res, next) {
@@ -226,8 +228,8 @@ function checkUsername(req, res, next) {
   }
 
   checkUsernameHandler(req.body.username)
-    .then(unique => res.status(200).json({ success: true, unique }))
-    .catch(err => next(err));
+    .then((unique) => res.status(200).json({ success: true, unique }))
+    .catch((err) => next(err));
 }
 
 async function loginHandler(email, password) {
@@ -322,9 +324,9 @@ async function verifyEmailHandler(token) {
 
   let updatedUser = await userService.updateUser(user, { emailVerified: true });
   let updateApplicationUser = await userService.updateApplicationUser(userId);
-  let updatedToken = tokenService.updateToken(retriveToken, { expired: true });
+  // let updatedToken = tokenService.updateToken(retriveToken, { expired: true });
 
-  if (!updatedUser || !updatedToken || !updateApplicationUser) {
+  if (!updatedUser || !updateApplicationUser) {
     throw "something went wrong";
   }
 
@@ -367,7 +369,7 @@ async function changePasswordHandler(userId, password) {
 
   const updatedUser = await userService.updateUser(user, {
     password: bcryptjs.hashSync(password, 10),
-    emailVerified: true
+    emailVerified: true,
   });
 
   if (!updatedUser) {
@@ -429,7 +431,8 @@ async function socialLoginHandler({ email }) {
 }
 
 async function getUserByEmailHandler(email) {
-  const user = await userService.getUserByEmail(email);
+  const user = await userService.getUserByUserName(email);
+  // console.log("this is the user---------------->", user);
   if (!user) {
     throw "user is not found";
   }
@@ -450,7 +453,7 @@ async function updatePasswordHandler(id, oldPassword, newPassword) {
   }
 
   const updatedUser = await userService.updateUser(user, {
-    password: bcryptjs.hashSync(newPassword, 10)
+    password: bcryptjs.hashSync(newPassword, 10),
   });
   if (!updatedUser) {
     throw "something went wrong";
@@ -484,7 +487,7 @@ async function setPasswordHandler(email, password) {
   }
 
   const updatedUser = await userService.updateUser(user, {
-    password: bcryptjs.hashSync(password, 10)
+    password: bcryptjs.hashSync(password, 10),
   });
   if (!updatedUser) {
     throw "something went wrong";
@@ -514,7 +517,7 @@ async function addCompanyProfileHandler(company) {
     company.user_id,
     company.applicationApplicationId
   );
-  
+
   if (!appUser) {
     throw "user is not found";
   }
@@ -533,11 +536,11 @@ async function addCompanyProfileHandler(company) {
   paymentInfo.currencyType = "peso";
   paymentInfo.createdAt = new Date();
   paymentInfo.updatedAt = new Date();
-  console.log(paymentInfo,'nfo')
+  console.log(paymentInfo, "nfo");
   const addCompany = await paymentService.addCompany(company);
   const updatedUser = await paymentService.updateApplicationUser(appUser, {
     ...appUser.dataValues,
-    CompanyId: company.id
+    CompanyId: company.id,
   });
   const paymentInfoAdd = await paymentService.addPaymentInformation(
     paymentInfo
@@ -574,5 +577,5 @@ module.exports = {
   setPassword,
   updateUser,
   addCmpanyProfile,
-  checkUsername
+  checkUsername,
 };
