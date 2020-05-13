@@ -256,12 +256,12 @@ async function loginHandler(email, password) {
 
 async function signUpHandler(user) {
   if (!user.username) {
-    if (!(await isEmailUnique(user.email))) {
-      throw "Email is already in use";
+    if (!(await isUsernameUnique(user.email))) {
+      throw "Username/Email is already in use";
     }
     user.username = user.email;
   } else {
-    if (!(await isUsernameUnique(user.username))) {
+    if (!(await isUsernameUnique(user.email))) {
       throw "Username is already in use";
     }
   }
@@ -274,7 +274,11 @@ async function signUpHandler(user) {
     throw "something went wrong";
   }
 
-  if (user.APPLICATION == "TRABAHANAP" || user.APPLICATION == "MSP" || user.APPLICATION == "JOBDOR") {
+  if (
+    user.APPLICATION == "TRABAHANAP" ||
+    user.APPLICATION == "MSP" ||
+    user.APPLICATION == "JOBDOR"
+  ) {
     const applicationUser = await userService.addApplicationUser(
       createdUser.id,
       user.APPLICATION,
