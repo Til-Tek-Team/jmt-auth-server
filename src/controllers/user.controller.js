@@ -7,6 +7,7 @@ const CONSTANTS = require("../../constants.js");
 const { validateUser } = require("../_helpers/validators");
 const _ = require("lodash");
 const uuid4 = require("uuid/v4");
+var moment = require("moment");
 
 function login(req, res, next) {
   const { email, password } = req.body;
@@ -45,6 +46,44 @@ function verifyToken(req, res, next) {
     .catch((err) => next(err));
 }
 
+function resendEmail(req, res, next) {
+  const email = req.body.email;
+  if (!email) {
+    res.status(200).json({ success: false, error: "invalid request" });
+    return;
+  }
+
+  resendEmailHandler(email)
+    .then((user) => res.status(200).json({ success: true, user }))
+    .catch((err) => next(err));
+}
+
+function getUnverifiedUser(req, res, next) {
+  getUnverifiedUserByDate(
+    req.query.startDate,
+    req.query.endDate,
+    req.query.offset || 0,
+    req.query.limit || 8
+  )
+    .then((user) =>
+      user
+        ? res.status(200).json({ success: true, user })
+        : res.status(200).json({ success: false, error: "Somethin went wrong" })
+    )
+    .catch((err) => next("Internal Server Error! Try again"));
+}
+
+function getUnverifiedUserDate(req, res, next) {
+  getUnverifiedUserByDateOnly(req.query.startDate, req.query.endDate)
+    .then((user) =>
+      user
+        ? res.status(200).json({ success: true, user })
+        : res
+            .status(200)
+            .json({ success: false, error: "Somethin went wrong " })
+    )
+    .catch((err) => next("Internal Server Error! Try again"));
+}
 function verifyEmail(req, res, next) {
   const token = req.body.token;
   if (!token) {
@@ -232,10 +271,23 @@ function checkUsername(req, res, next) {
     .catch((err) => next(err));
 }
 
+function getUtcTime() {
+  let d = new Date();
+  let utcTime = d.getTime() + d.getTimezoneOffset() * 60000;
+  let utcDate = moment(new Date(utcTime)).format("YYYY-MM-DD HH:mm:ss");
+  return utcDate;
+}
+
 async function loginHandler(email, password) {
   let user = await userService.getUserByUserName(email);
   if (!user) {
     throw "email or password incorrect";
+  }
+  let userCreated = moment(user.createdAt);
+  let curreTime = moment(Date.now());
+  const difference = curreTime.diff(userCreated, "minutes");
+  if (!user.emailVerified && parseInt(difference) > 15) {
+    throw "Check your confirmation email first";
   }
 
   if (!user.emailVerified) {
@@ -305,14 +357,75 @@ async function verifyTokenHandler(token) {
   return decoded;
 }
 
+async function resendEmailHandler(email) {
+  const user = await userService.getUserByEmail(email);
+
+  if (!user) {
+    throw "user does not exist";
+  }
+
+  const token = jwt.sign({ sub: user.id }, CONSTANTS.JWTEMAILSECRET);
+  let createToken = tokenService.createToken({ token });
+
+  if (!createToken) {
+    throw "something went wrong";
+  }
+  user.dataValues["emailVerificationToken"] = token;
+
+  return user;
+}
+
+async function getUnverifiedUserByDateOnly(startDate, endDate) {
+  const users = await userService.getUnverifiedUserByDateOnly(
+    startDate,
+    endDate
+  );
+
+  let user = users.map((items) => {
+    const token = jwt.sign({ sub: items.id }, CONSTANTS.JWTEMAILSECRET);
+    let createToken = tokenService.createToken({ token });
+    items["emailVerificationToken"] = token;
+    return items;
+  });
+
+  if (user) {
+    return user;
+  }
+}
+
+async function getUnverifiedUserByDate(startDate, endDate, offset, limit) {
+  const users = await userService.getUnverifiedUserByDate(
+    startDate,
+    endDate,
+    parseInt(offset) || 0,
+    parseInt(limit) || 8
+  );
+  // console.log(users);
+  if (users) {
+    const countUsers = await userService.countUnverifiedUser(
+      startDate,
+      endDate
+    );
+    let total = Object.values(countUsers[0])[0];
+    return { users, total };
+  }
+}
 async function verifyEmailHandler(token) {
   let retriveToken = await tokenService.getToken(token);
-  // console.log("retrived token value", retriveToken);
+
+  //  console.log("retrived token value", retriveToken);
 
   if (!retriveToken) {
     throw "invalid token";
   }
 
+  let tokenCreated = moment(retriveToken.createdAt);
+  let curreTime = moment(Date.now());
+  const difference = curreTime.diff(tokenCreated, "minutes");
+  //  console.log(tokenCreated,curreTime,difference);
+  if (difference > 15) {
+    throw "invalid token";
+  }
   var decoded = jwt.verify(token, CONSTANTS.JWTEMAILSECRET);
 
   // console.log("decoded token value", decoded);
@@ -540,7 +653,7 @@ async function addCompanyProfileHandler(company) {
   paymentInfo.currencyType = "peso";
   paymentInfo.createdAt = new Date();
   paymentInfo.updatedAt = new Date();
-  console.log(paymentInfo, "nfo");
+  // console.log(paymentInfo, "nfo");
   const addCompany = await paymentService.addCompany(company);
   const updatedUser = await paymentService.updateApplicationUser(appUser, {
     ...appUser.dataValues,
@@ -574,6 +687,7 @@ module.exports = {
   changePasswordRequest,
   changePassword,
   getUser,
+  resendEmail,
   socialSignup,
   socialLogin,
   updatePassword,
@@ -582,4 +696,6 @@ module.exports = {
   updateUser,
   addCmpanyProfile,
   checkUsername,
+  getUnverifiedUser,
+  getUnverifiedUserDate,
 };

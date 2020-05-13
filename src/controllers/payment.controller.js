@@ -355,6 +355,7 @@ async function buyPlanHandler(data) {
     balanceBody.balance = payType.amount;
     balanceBody.CompanyId = user.CompanyId;
     balanceBody.UserId = user.UserId;
+    balanceBody.type = 'GRANTED'
     const addBalance = await paymentService.addAmountBalance(balanceBody);
     console.log(addBalance);
   }
@@ -454,19 +455,16 @@ async function getSubscriptionByCompIdHandler(id, offset, limit) {
   return { sub, total: totalItems };
 }
 
-async function getAllSubscriptionHanlder(ApplicationId, offset, limit) {
-  console.log(offset, limit);
-  const subscriptions = await paymentService.getAllSubscription(
-    ApplicationId,
-    parseInt(offset),
-    parseInt(limit)
-  );
+async function getAllSubscriptionHanlder(ApplicationId,offset,limit) {
+  console.log(offset,limit)
+  const subscriptions = await paymentService.getCompainesWithSubscirption(ApplicationId,parseInt(offset),parseInt(limit));
 
   if (!subscriptions) {
     throw "something went wrong";
   }
-
-  return subscriptions;
+  const total = await paymentService.countGetCompainesWithSubscirption();
+  totalItems = Object.values(total[0])[0];
+  return {subscriptions,total:totalItems};
 }
 
 async function checkCardUnique(creditCardNumber, ownerReference) {
