@@ -22,6 +22,10 @@ app.get(
   paymentController.getAllSubscriptionById
 );
 app.put("/subscription_transaction/:id", paymentController.confirmPayment);
+app.get("/company/subscription_transaction/:compId", paymentController.getAllSubscriptionByCompId);
+app.post('/deposit',paymentController.depositMoney);
+app.get("/balance/:id", paymentController.getBalance);
+app.put("/pay/exempt/:id", paymentController.payExemptByCompId);
 app.get(
   "/company/subscription_transaction/:compId",
   paymentController.getAllSubscriptionByCompId

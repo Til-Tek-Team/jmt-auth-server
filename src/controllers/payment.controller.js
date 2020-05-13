@@ -1,9 +1,10 @@
 const {
   validatePaymentInformation,
-  validatePlanType
+  validatePlanType,
 } = require("../_helpers/validators");
 const uuid4 = require("uuid/v4");
 const paymentService = require("../services/payment.service");
+const userService = require("../services/user.service");
 var moment = require("moment");
 
 function addPaymentInformation(req, res, next) {
@@ -15,10 +16,10 @@ function addPaymentInformation(req, res, next) {
   }
 
   addPaymentInformationHandler(payInfo)
-    .then(payment_information =>
+    .then((payment_information) =>
       res.status(200).json({ success: true, payment_information })
     )
-    .catch(err => next(err));
+    .catch((err) => next(err));
 }
 
 function getUserPaymentInformations(req, res, next) {
@@ -29,23 +30,25 @@ function getUserPaymentInformations(req, res, next) {
   }
 
   getUserPaymentInformationsHandler(userId)
-    .then(payment_informations =>
+    .then((payment_informations) =>
       res.status(200).json({ success: true, payment_informations })
     )
-    .catch(err => next(err));
+    .catch((err) => next(err));
 }
 
 function buyPlan(req, res, next) {
-  const { type, name, UserId } = req.body;
+  const { type, name, UserId, transactionMadeBy } = req.body;
 
-  if (!type || !name || !UserId) {
+  if (!type || !name || !UserId || !transactionMadeBy) {
     res.status(200).json({ success: false, error: "invalid request" });
     return;
   }
 
   buyPlanHandler(req.body)
-    .then(subscription => res.status(200).json({ success: true, subscription }))
-    .catch(err => next(err));
+    .then((subscription) =>
+      res.status(200).json({ success: true, subscription })
+    )
+    .catch((err) => next(err));
 }
 
 function getSubscription(req, res, next) {
@@ -57,8 +60,10 @@ function getSubscription(req, res, next) {
   }
 
   getSubscriptionHandler(UserId, ApplicationId)
-    .then(subscription => res.status(200).json({ success: true, subscription }))
-    .catch(err => next(err));
+    .then((subscription) =>
+      res.status(200).json({ success: true, subscription })
+    )
+    .catch((err) => next(err));
 }
 
 function getAllSubscriptionById(req, res, next) {
@@ -69,8 +74,32 @@ function getAllSubscriptionById(req, res, next) {
   }
   // console.log(id)
   getSubscriptionByIdHandler(id)
-    .then(subscription => res.status(200).json({ success: true, subscription }))
-    .catch(err => next(err));
+    .then((subscription) =>
+      res.status(200).json({ success: true, subscription })
+    )
+    .catch((err) => next(err));
+}
+
+function payExemptByCompId(req, res, next) {
+  const { id } = req.params;
+  if (!id) {
+    res.status(200).json({ success: false, error: "invalid request" });
+    return;
+  }
+  payExemptHandler(req.params.id, req.body)
+    .then((balance) => res.status(200).json({ success: true, balance }))
+    .catch((err) => next(err));
+}
+
+function getBalance(req, res, next) {
+  const { id } = req.params;
+  if (!id) {
+    res.status(200).json({ success: false, error: "invalid request" });
+    return;
+  }
+  getBalanceHandler(id)
+    .then((balance) => res.status(200).json({ success: true, balance }))
+    .catch((err) => next(err));
 }
 
 function getAllSubscriptionByCompId(req, res, next) {
@@ -79,9 +108,15 @@ function getAllSubscriptionByCompId(req, res, next) {
     res.status(200).json({ success: false, error: "invalid request" });
     return;
   }
-  getSubscriptionByCompIdHandler(compId)
-    .then(subscription => res.status(200).json({ success: true, subscription }))
-    .catch(err => next(err));
+  getSubscriptionByCompIdHandler(
+    compId,
+    req.query.page || 0,
+    req.query.pageSize || 5
+  )
+    .then((subscription) =>
+      res.status(200).json({ success: true, subscription })
+    )
+    .catch((err) => next(err));
 }
 
 function getAllSubscription(req, res, next) {
@@ -92,11 +127,15 @@ function getAllSubscription(req, res, next) {
     return;
   }
 
-  getAllSubscriptionHanlder(ApplicationId)
-    .then(subscriptions =>
+  getAllSubscriptionHanlder(
+    ApplicationId,
+    req.query.page || 0,
+    req.query.pageSize || 6
+  )
+    .then((subscriptions) =>
       res.status(200).json({ success: true, subscriptions })
     )
-    .catch(err => next(err));
+    .catch((err) => next(err));
 }
 
 function purchaseBySubscriptionId(req, res, next) {
@@ -108,18 +147,18 @@ function purchaseBySubscriptionId(req, res, next) {
   }
 
   purchaseCV(subscriptionId)
-    .then(subscriptions =>
+    .then((subscriptions) =>
       res.status(200).json({ success: true, subscriptions })
     )
-    .catch(err => next(err));
+    .catch((err) => next(err));
 }
 
 function getPaymentPlanTypes(req, res, next) {
   getPaymentPlanTypesHandler()
-    .then(payment_plan_types =>
+    .then((payment_plan_types) =>
       res.status(200).json({ success: true, payment_plan_types })
     )
-    .catch(err => next(err));
+    .catch((err) => next(err));
 }
 
 function getPaymentPlanType(req, res, next) {
@@ -128,10 +167,10 @@ function getPaymentPlanType(req, res, next) {
   }
 
   getPaymentPlanTypeHandler(req.params.id)
-    .then(payment_plan_type => {
+    .then((payment_plan_type) => {
       res.status(200).json({ success: true, payment_plan_type });
     })
-    .catch(err => next(err));
+    .catch((err) => next(err));
 }
 
 function createPaymentPlanType(req, res, next) {
@@ -142,10 +181,10 @@ function createPaymentPlanType(req, res, next) {
   }
 
   createPaymentPlanTypeHandler(req.body)
-    .then(payment_plan_type => {
+    .then((payment_plan_type) => {
       res.status(200).json({ success: true, payment_plan_type });
     })
-    .catch(err => next(err));
+    .catch((err) => next(err));
 }
 
 function updatePaymentPlanType(req, res, next) {
@@ -154,10 +193,10 @@ function updatePaymentPlanType(req, res, next) {
   }
 
   updatePaymentPlanTypeHandler(req.body)
-    .then(payment_plan_type => {
+    .then((payment_plan_type) => {
       res.status(200).json({ success: true, payment_plan_type });
     })
-    .catch(err => next(err));
+    .catch((err) => next(err));
 }
 
 async function addPaymentInformationHandler(payInfo) {
@@ -180,7 +219,7 @@ async function addPaymentInformationHandler(payInfo) {
 
   // payInfo.id = uuid4();
   const updatedUser = await paymentService.updateAppUser(user, {
-    PaymentIdentifier: payInfo.ownerReference
+    PaymentIdentifier: payInfo.ownerReference,
   });
   const paymentInformation = await paymentService.addPaymentInformation(
     payInfo
@@ -214,14 +253,20 @@ async function getUserPaymentInformationsHandler(userId) {
 
 async function buyPlanHandler(data) {
   const user = await paymentService.getApplicationUserByUserId(data.UserId);
-
-  if (!user) {
+  const u = await userService.getUserById(data.UserId);
+  if (!user || !u) {
     throw "user does not exist";
+  }
+
+  let fromEmployer = u.username == data.transactionMadeBy;
+  let transaction_type = "PURCHASED";
+  if (!fromEmployer) {
+    transaction_type = "GRANTED";
   }
 
   const PaymentIdentifier = user.CompanyId ? user.CompanyId : user.UserId;
 
-  const payType = await paymentService.getPaymentType(data.name);
+  const payType = await paymentService.getPaymentType(data.name, data.type);
 
   if (!payType || !payType.name) {
     throw "invalid request";
@@ -234,10 +279,7 @@ async function buyPlanHandler(data) {
   subscription["PaymentId"] = PaymentIdentifier;
   subscription["createdAt"] = subscription.createdAt
     ? subscription.createdAt
-    : new Date()
-        .toISOString()
-        .split(".")[0]
-        .replace("T", " ");
+    : new Date().toISOString().split(".")[0].replace("T", " ");
   subscription["updatedAt"] = new Date()
     .toISOString()
     .split(".")[0]
@@ -254,10 +296,7 @@ async function buyPlanHandler(data) {
     subscription["expirationDate"] =
       subscription.expirationDate &&
       subscription.expirationDate >
-        new Date()
-          .toISOString()
-          .split(".")[0]
-          .replace("T", " ")
+        new Date().toISOString().split(".")[0].replace("T", " ")
         ? new Date(
             new Date(subscription.expirationDate).getTime() +
               24 * 60 * 60 * 1000 * payType.valueInDays
@@ -286,7 +325,9 @@ async function buyPlanHandler(data) {
       oldSubscription,
       user.id,
       PaymentIdentifier,
-      payType.amount
+      payType.amount,
+      data.transactionMadeBy,
+      transaction_type
     );
     newSub = await paymentService.updateSubscription(
       tempSub,
@@ -298,13 +339,24 @@ async function buyPlanHandler(data) {
       oldSubscription,
       user.id,
       PaymentIdentifier,
-      payType.amount
+      payType.amount,
+      data.transactionMadeBy,
+      transaction_type
     );
     newSub = await paymentService.addSubscription(subscription);
   }
 
   if (!newSub || !trans) {
     throw "something went wrong";
+  }
+
+  if (!fromEmployer) {
+    let balanceBody = {};
+    balanceBody.balance = payType.amount;
+    balanceBody.CompanyId = user.CompanyId;
+    balanceBody.UserId = user.UserId;
+    const addBalance = await paymentService.addAmountBalance(balanceBody);
+    console.log(addBalance);
   }
 
   return newSub;
@@ -330,6 +382,20 @@ async function getSubscriptionHandler(UserId, ApplicationId) {
   return sub;
 }
 
+async function getPaymentPlanTypesHandler() {
+  const payment_plan_types = await paymentService.getPaymentPlanTypes();
+  console.log(payment_plan_types);
+  if (payment_plan_types) {
+    return payment_plan_types;
+  }
+}
+async function getPaymentPlanTypeHandler(id) {
+  const payment_paln_type = await paymentService.getPaymentTypeById(id);
+  if (payment_paln_type) {
+    return payment_paln_type;
+  }
+}
+
 async function getSubscriptionByIdHandler(id) {
   const sub = await paymentService.getSubscriptionTransactionById(id);
 
@@ -339,17 +405,62 @@ async function getSubscriptionByIdHandler(id) {
   return sub;
 }
 
-async function getSubscriptionByCompIdHandler(id) {
-  const sub = await paymentService.getSubscriptionTransactionByCompanyId(id);
+async function getBalanceHandler(id) {
+  const balance = await paymentService.getBalanceByCompanyId(id);
+  if (balance) {
+    return balance;
+  } else {
+    return 0;
+  }
+}
 
+async function payExemptHandler(id, body) {
+  // console.log(body);
+  const subscriptions = await paymentService.getSubscriptionTransactionByCompanyId(
+    id
+  );
+  if (subscriptions) {
+    subscriptions.map((subs) => {
+      // console.log(subs.amount);
+      if (!subs.paid) {
+        const update = paymentService.updateconfirmPaymentField(
+          subs.id,
+          1,
+          body.name,
+          subs.amount
+        );
+      }
+    });
+    return true;
+  }
+}
+
+async function getSubscriptionByCompIdHandler(id, offset, limit) {
+  // console.log(offset,limit)
+  const sub = await paymentService.getSubscriptionTransactionByCompanyId(
+    id,
+    offset,
+    limit
+  );
+  const total = await paymentService.getCountSubscriptionTransaction(id);
+
+  let totalItems;
+  if (total) {
+    totalItems = Object.values(total[0])[0];
+  }
   if (!sub) {
     throw "use do not have subscription";
   }
-  return sub;
+  return { sub, total: totalItems };
 }
 
-async function getAllSubscriptionHanlder(ApplicationId) {
-  const subscriptions = await paymentService.getAllSubscription(ApplicationId);
+async function getAllSubscriptionHanlder(ApplicationId, offset, limit) {
+  console.log(offset, limit);
+  const subscriptions = await paymentService.getAllSubscription(
+    ApplicationId,
+    parseInt(offset),
+    parseInt(limit)
+  );
 
   if (!subscriptions) {
     throw "something went wrong";
@@ -371,9 +482,12 @@ async function addSubscriptionTransaction(
   oldSub,
   UserId,
   PaymentId,
-  amount
+  amount,
+  transactionMadeBy,
+  transaction_type
 ) {
   let subTransaction = {};
+  subTransaction.transaction_type = transaction_type;
   subTransaction.transactionFrom = oldSub
     ? oldSub.type == "EXPRESS"
       ? oldSub.expressType
@@ -393,6 +507,7 @@ async function addSubscriptionTransaction(
     .replace("T", " ");
 
   subTransaction.amount = amount;
+  subTransaction.transactionMadeBy = transactionMadeBy;
 
   const savedTrans = await paymentService.addSubscriptionTransaction(
     subTransaction
@@ -420,7 +535,10 @@ async function purchaseCV(subscriptionId) {
         return updateSubscription;
       }
     }
-  } else if (subscription && subscription.type == "PREMIUM") {
+  } else if (
+    subscription &&
+    (subscription.type == "PREMIUM" || subscription.type == "PREMIUM")
+  ) {
     const today = moment().format();
     if (subscription.expirationDate >= today) {
       return subscription;
@@ -428,53 +546,101 @@ async function purchaseCV(subscriptionId) {
   }
 }
 function confirmPayment(req, res, next) {
-  confirmPaymentById(req.params.id)
-    .then(payment =>
+  confirmPaymentById(req.params.id, req.body)
+    .then((payment) =>
       payment
         ? res.status(200).json({ success: true, payment })
         : res
             .status(200)
             .json({ success: false, error: "Something went wrong" })
     )
-    .catch(err => next(err));
+    .catch((err) => next(err));
 }
 
-async function confirmPaymentById(id) {
+function depositMoney(req, res, next) {
+  depositMoneyForCompany(req.body)
+    .then((deposit) =>
+      deposit
+        ? res.status(200).json({ success: true, deposit })
+        : res
+            .status(200)
+            .json({ success: false, error: "Something went wrong" })
+    )
+    .catch((err) => next(err));
+}
+
+async function depositMoneyForCompany(body) {
+  console.log(body);
+  let balanceBody = {};
+  balanceBody.balance = body.body.amount;
+  balanceBody.CompanyId = body.compId;
+  balanceBody.UserId = body.userId;
+  const addBalance = await paymentService.addAmountBalance(balanceBody);
+  // console.log(addBalance)
+  if (addBalance) {
+    return addBalance;
+  }
+}
+
+async function confirmPaymentById(id, body) {
   const confirmPayment = await paymentService.getSubscriptionTransactionById(
     id
   );
-  if (confirmPayment.active) {
-    const confirm = await paymentService.updateconfirmPaymentField(id);
+  // console.log(confirmPayment);
+  let paidA = parseInt(confirmPayment.paidAmount) + parseInt(body.amount);
+  if (confirmPayment.amount == paidA) {
+    const confirm = await paymentService.updateconfirmPaymentField(
+      id,
+      1,
+      body.name,
+      paidA
+    );
     if (confirm[0] > 0) {
       return true;
     }
     return false;
+  } else if (parseInt(confirmPayment.amount) < paidA) {
+    throw "More than engough";
+    // let balance = paidA - parseInt(confirmPayment.amount);
+    // let paidLeft = confirmPayment.amount - confirmPayment.paidAmount;
+    // if (paidLeft != 0 && paidLeft > 0) {
+    //   const confirm = await paymentService.updateconfirmPaymentField(
+    //     id,
+    //     1,
+    //     body.name,
+    //     paidLeft
+    //   );
+    // }
+    // // let balanceBody = {};
+    // // balanceBody.balance = balance;
+    // // balanceBody.CompanyId = confirmPayment.paymentInformationId;
+
+    // // const addBalance = await paymentService.addAmountBalance(balanceBody);
+    // // if (addBalance || confirm[0] > 0) {
+    // //   return true;
+    // // }
+    // // return false;
   } else {
-    const confirm = await paymentService.updateconfirmPaymentField(id);
+    const confirm = await paymentService.updateconfirmPaymentField(
+      id,
+      0,
+      body.name,
+      paidA
+    );
+    // console.log(confirm)
     if (confirm[0] > 0) {
       return true;
     }
     return false;
-  }
-}
-
-async function getPaymentPlanTypesHandler() {
-  const payment_plan_types = await paymentService.getPaymentPlanTypes();
-  if (payment_plan_types) {
-    return payment_plan_types;
-  }
-}
-
-async function getPaymentPlanTypeHandler(id) {
-  const payment_paln_type = await paymentService.getPaymentTypeById(id);
-  if (payment_paln_type) {
-    return payment_paln_type;
   }
 }
 
 async function createPaymentPlanTypeHandler(plan_type) {
   let new_plan_type = plan_type;
-  new_plan_type.valueInDays = plan_type.type == "PREMIUM" ? plan_type.value : 0;
+  new_plan_type.valueInDays =
+    plan_type.type == "PREMIUM" || plan_type.type == "FREE"
+      ? plan_type.value
+      : 0;
   new_plan_type.valueInPoints =
     plan_type.type == "EXPRESS" ? plan_type.value : 0;
   new_plan_type = await paymentService.createPaymentPlanType(new_plan_type);
@@ -487,7 +653,10 @@ async function createPaymentPlanTypeHandler(plan_type) {
 
 async function updatePaymentPlanTypeHandler(plan_type) {
   let new_plan_type = plan_type;
-  new_plan_type.valueInDays = plan_type.type == "PREMIUM" ? plan_type.value : 0;
+  new_plan_type.valueInDays =
+    plan_type.type == "PREMIUM" || plan_type.type == "FREE"
+      ? plan_type.value
+      : 0;
   new_plan_type.valueInPoints =
     plan_type.type == "EXPRESS" ? plan_type.value : 0;
   new_plan_type.name = new_plan_type.name.toUpperCase();
@@ -512,8 +681,11 @@ module.exports = {
   purchaseCV,
   purchaseBySubscriptionId,
   confirmPayment,
+  depositMoney,
+  getBalance,
+  payExemptByCompId,
   getPaymentPlanTypes,
   createPaymentPlanType,
   updatePaymentPlanType,
-  getPaymentPlanType
+  getPaymentPlanType,
 };

@@ -274,7 +274,7 @@ async function signUpHandler(user) {
     throw "something went wrong";
   }
 
-  if (user.APPLICATION == "TRABAHANAP" || user.APPLICATION == "MSP") {
+  if (user.APPLICATION == "TRABAHANAP" || user.APPLICATION == "MSP" || user.APPLICATION == "JOBDOR") {
     const applicationUser = await userService.addApplicationUser(
       createdUser.id,
       user.APPLICATION,
@@ -471,7 +471,7 @@ async function isEmailUnique(email) {
 }
 
 async function isUsernameUnique(username) {
-  const foundUsername = await userService.getUserByUsername(username);
+  const foundUsername = await userService.getUserByUserName(username);
   if (foundUsername) {
     return false;
   }
@@ -554,7 +554,7 @@ async function addCompanyProfileHandler(company) {
 }
 
 async function checkUsernameHandler(username) {
-  let user = await userService.getUserByUsername(username);
+  let user = await userService.getUserByUserName(username);
   if (user) {
     return false;
   }
