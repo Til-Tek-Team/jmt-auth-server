@@ -307,16 +307,17 @@ async function loginHandler(email, password) {
 }
 
 async function signUpHandler(user) {
-  if (!user.username) {
-    if (!(await isUsernameUnique(user.email))) {
-      throw "Username/Email is already in use";
-    }
-    user.username = user.email;
-  } else {
-    if (!(await isUsernameUnique(user.email))) {
-      throw "Username is already in use";
-    }
+  user.username = user.username ? user.username : user.email;
+  if (!(await isUsernameUnique(user.username))) {
+    throw "Username/Email is already in use";
   }
+  // if (!user.username) {
+  //   user.username = user.email;
+  // } else {
+  //   if (!(await isUsernameUnique(user.email))) {
+  //     throw "Username is already in use";
+  //   }
+  // }
 
   let createdUser = await userService.createUser(user);
   const token = jwt.sign({ sub: createdUser.id }, CONSTANTS.JWTEMAILSECRET);
