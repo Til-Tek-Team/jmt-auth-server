@@ -281,7 +281,7 @@ function getUtcTime() {
 async function loginHandler(email, password) {
   let user = await userService.getUserByUserName(email);
   if (!user) {
-    throw "email or password incorrect";
+    throw "Email or Password incorrect";
   }
   let userCreated = moment(user.createdAt);
   let curreTime = moment(Date.now());
@@ -291,7 +291,7 @@ async function loginHandler(email, password) {
   }
 
   if (!user.emailVerified) {
-    throw "verify your email to proceed";
+    throw "Verify your Email to proceed";
   }
 
   const pass = bcryptjs.compareSync(password, user.password);
