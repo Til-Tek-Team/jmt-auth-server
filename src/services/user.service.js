@@ -29,7 +29,10 @@ function getApplicationUserByUserId(id) {
 }
 
 function updateUser(user, data) {
-  return user.update(data);
+  user.changed("updatedAt",true);
+  return user.update(data).catch((err) =>
+    console.log(err)
+  );
 }
 
 function addApplicationUser(UserId, applicationApplicationId, role) {

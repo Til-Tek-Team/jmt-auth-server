@@ -8,6 +8,7 @@ const { validateUser } = require("../_helpers/validators");
 const _ = require("lodash");
 const uuid4 = require("uuid/v4");
 var moment = require("moment");
+var sequelize = require("sequelize");
 
 function login(req, res, next) {
   const { email, password } = req.body;
@@ -283,8 +284,9 @@ async function loginHandler(email, password) {
   if (!user) {
     throw "Email or Password incorrect";
   }
-  let userCreated = moment(user.createdAt);
+  let userCreated = moment(user.updatedAt);
   let curreTime = moment(Date.now());
+ 
   const difference = curreTime.diff(userCreated, "minutes");
   if (!user.emailVerified && parseInt(difference) > 15) {
     throw "Check your confirmation email first";
@@ -371,6 +373,7 @@ async function resendEmailHandler(email) {
   if (!createToken) {
     throw "something went wrong";
   }
+  const updateUser = await userService.updateUser(user,{updatedAt:sequelize.fn("NOW")});
   user.dataValues["emailVerificationToken"] = token;
 
   return user;
