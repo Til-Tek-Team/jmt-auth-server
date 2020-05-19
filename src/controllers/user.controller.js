@@ -291,7 +291,7 @@ async function loginHandler(email, password) {
   }
 
   if (!user.emailVerified) {
-    throw "Verify your Email to proceed";
+    throw "Verify your email to proceed";
   }
 
   const pass = bcryptjs.compareSync(password, user.password);
