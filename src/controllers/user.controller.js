@@ -30,7 +30,6 @@ function signUp(req, res, next) {
     res.status(200).json({ success: false, error: "invalid request" });
     return;
   }
-
   signUpHandler(user)
     .then((user) => res.status(200).json({ success: true, user }))
     .catch((err) => next(err));
@@ -281,6 +280,7 @@ function getUtcTime() {
 
 async function loginHandler(email, password) {
   let user = await userService.getUserByUserName(email);
+  // console.log(user)
   if (!user) {
     throw "Email or Password incorrect";
   }
@@ -303,7 +303,7 @@ async function loginHandler(email, password) {
   }
 
   // const token = jwt.sign({ sub: user.id }, CONSTANTS.JWTSECRET, { expiresIn: '24hr' });
-  let updatedUser = _.omit(user.dataValues, ["password"]);
+  let updatedUser = _.omit(user.dataValues, ["password", "createdAt", "updatedAt"]);
   // updatedUser.token = token;
   return updatedUser;
 }
@@ -501,13 +501,20 @@ async function changePasswordHandler(userId, password) {
 }
 
 async function getUserHandler(email) {
-  const user = await userService.getUserByEmail(email);
+  let user = await userService.getUserByEmail(email);
 
   if (!user) {
     throw "user does not exist";
   }
-
-  return user;
+  const application = await userService.getApplicationUserByUserId(user.id);
+  // user = {...user, applicationRole: 'SELLER'}
+  // return user;
+  let temp = user.dataValues;
+  return { id: temp.id, username: temp.username,
+    email: temp.email, role: application.role, 
+    firstName: temp.firstName, lastName: temp.lastName,
+    applicationName: application.applicationApplicationId
+  };
 }
 
 async function socialSignupHandler(user) {
@@ -632,7 +639,7 @@ async function updateUserHandler(user) {
 }
 
 async function addCompanyProfileHandler(company) {
-  console.log(company);
+  // console.log(company);
   // company.applicationApplicationId = company.ApplicationId;
   const appUser = await paymentService.getApplicationUserByUserIdAndApplication(
     company.user_id,
