@@ -31,7 +31,7 @@ function signUp(req, res, next) {
     return;
   }
   signUpHandler(user)
-    .then((user) => res.status(200).json({ success: true, user }))
+    .then((user) => user.success ? res.status(200).json({ success: true, user }) : res.status(200).json({ success: false, user }))
     .catch((err) => next(err));
 }
 
@@ -310,13 +310,14 @@ async function loginHandler(email, password) {
 
 async function signUpHandler(user) {
   user.username = user.username ? user.username : user.email;
-  if (!(await isUsernameUnique(user.username))) {
-    throw "Username/Email is already in use";
+  const checkedUser = await checkUsernameUnique(user.username);
+  if (!checkedUser.isUnique) {
+    return {...checkedUser, success: false};
   }
   // if (!user.username) {
   //   user.username = user.email;
   // } else {
-  //   if (!(await isUsernameUnique(user.email))) {
+  //   if (!(await checkUsernameUnique(user.email))) {
   //     throw "Username is already in use";
   //   }
   // }
@@ -347,7 +348,7 @@ async function signUpHandler(user) {
 
   let updatedUser = _.omit(createdUser.dataValues, ["password"]);
 
-  return { ...updatedUser, emailVerificationToken: token };
+  return { ...updatedUser, success: true, emailVerificationToken: token };
 }
 
 async function verifyTokenHandler(token) {
@@ -598,13 +599,23 @@ async function isEmailUnique(email) {
   return true;
 }
 
-async function isUsernameUnique(username) {
-  const foundUsername = await userService.getUserByUserName(username);
-  if (foundUsername) {
-    return false;
+async function checkUsernameUnique(username) {
+  const user = await userService.getUserByUserName(username);
+  if (user) {
+    const application = await userService.getApplicationUserByUserId(user.id);
+    // user = {...user, applicationRole: 'SELLER'}
+    // return user;
+    let temp = user.dataValues;
+    // console.log(application.dataValues)
+    return { isUnique: false,
+      id: temp.id, username: temp.username,
+      email: temp.email, role: application.role, 
+      firstName: temp.firstName, lastName: temp.lastName,
+      applicationName: application.applicationApplicationId
+    };
   }
 
-  return true;
+  return { isUnique: true };
 }
 
 async function setPasswordHandler(email, password) {
