@@ -261,7 +261,7 @@ function addCmpanyProfile(req, res, next) {
 }
 
 function checkUsername(req, res, next) {
-  console.log(req.body);
+  // console.log(req.body);
   if (!req.body.username) {
     return res.status(200).json({ success: false, error: "invalid request" });
   }
