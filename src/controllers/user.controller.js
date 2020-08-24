@@ -138,6 +138,17 @@ function getUser(req, res, next) {
     .catch((err) => next(err));
 }
 
+function getUserByUsername(req, res, next) {
+  const username = req.params.username;
+  if (!username) {
+    return res.status(200).json({ success: false, error: "invalid request" });
+  }
+
+  getByUsernameHandler(username)
+    .then((user) => res.status(200).json({ success: true, user }))
+    .catch((err) => next(err));
+}
+
 function socialSignup(req, res, next) {
   let {
     email,
@@ -280,7 +291,7 @@ function getUtcTime() {
 
 async function loginHandler(email, password) {
   let user = await userService.getUserByUserName(email);
-  // console.log(user)
+  // console.log(user, email, password)
   if (!user) {
     throw "Email or Password incorrect";
   }
@@ -518,6 +529,24 @@ async function getUserHandler(email) {
   };
 }
 
+async function getByUsernameHandler(username) {
+  let user = await userService.getUserByUserName(username);
+
+  if (!user) {
+    throw "user does not exist";
+  }
+
+  const application = await userService.getApplicationUserByUserId(user.id);
+  // user = {...user, applicationRole: 'SELLER'}
+  // return user;
+  let temp = user.dataValues;
+  return { id: temp.id, username: temp.username,
+    email: temp.email, role: application.role, 
+    firstName: temp.firstName, lastName: temp.lastName,
+    applicationName: application.applicationApplicationId
+  };
+}
+
 async function socialSignupHandler(user) {
   if (!(await isEmailUnique(user.email))) {
     throw "Email is already in use";
@@ -709,6 +738,7 @@ module.exports = {
   changePasswordRequest,
   changePassword,
   getUser,
+  getUserByUsername,
   resendEmail,
   socialSignup,
   socialLogin,
