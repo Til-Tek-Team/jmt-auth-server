@@ -8,7 +8,7 @@ app.post("/signup", userController.signUp);
 app.post("/social_login", userController.socialLogin);
 app.post("/social_signup", userController.socialSignup);
 
-app.get("/user/:username", userController.getUserByUsername);
+app.get("/user_name/:username", userController.getUserByUsername);
 app.get("/users/:email", userController.getUser);
 app.post("/resend_email",userController.resendEmail);
 // app.post('/verify_token', userController.verifyToken);
