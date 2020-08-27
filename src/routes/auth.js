@@ -31,3 +31,8 @@ app.post("/update_user", userController.updateUser);
 app.post("/companies", userController.addCmpanyProfile);
 
 app.post("/check_username", userController.checkUsername);
+
+app.post(
+  "/create_new_application_user",
+  userController.createNewApplicationUser
+);

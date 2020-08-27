@@ -288,6 +288,31 @@ function getUtcTime() {
   return utcDate;
 }
 
+function createNewApplicationUser(req, res, next) {
+  let { username, application, role, verified } = req.body;
+  if (!(username && application && role && verified)) {
+    return res.status(200).json({ success: false, error: "invalid request" });
+  }
+
+  createNewApplicationUserHandler(req.body)
+    .then((unique) => res.status(200).json({ success: true, unique }))
+    .catch((err) => next(err));
+}
+
+async function createNewApplicationUserHandler(user) {
+  let authUser = await userService.getUserByUserName(user.username);
+  let newApplicationUser = await userService.addApplicationUser(
+    authUser.id,
+    user.application,
+    user.role,
+    user.verified
+  );
+  // console.log(newApplicationUser);
+  if (newApplicationUser) {
+    return newApplicationUser;
+  }
+}
+
 async function loginHandler(email, password) {
   let user = await userService.getUserByUserName(email);
   if (!user) {
@@ -521,6 +546,13 @@ async function getByUsernameHandler(username) {
   }
 
   const application = await userService.getApplicationUserByUserId(user.id);
+  let company = {};
+  if (application.dataValues.company) {
+    let c = application.dataValues.company.dataValues;
+    company["companyName"] = c.companyName;
+    company["address"] = c.address;
+    company["industryType"] = c.industryType;
+  }
   let temp = user.dataValues;
   return {
     id: temp.id,
@@ -531,6 +563,7 @@ async function getByUsernameHandler(username) {
     lastName: temp.lastName,
     applicationName: application.applicationApplicationId,
     phoneNumber: temp.phoneNumber,
+    ...company,
   };
 }
 
@@ -733,4 +766,5 @@ module.exports = {
   checkUsername,
   getUnverifiedUser,
   getUnverifiedUserDate,
+  createNewApplicationUser,
 };
