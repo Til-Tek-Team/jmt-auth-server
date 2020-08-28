@@ -710,7 +710,7 @@ async function addCompanyProfileHandler(company) {
     company.user_id,
     company.applicationApplicationId
   );
-  console.log(appUser, 'appuser')
+  // console.log(appUser, 'appuser')
 
   if (!appUser) {
     throw "user is not found";
