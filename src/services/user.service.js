@@ -40,7 +40,7 @@ function addApplicationUser(
   role,
   verified = "0"
 ) {
-  console.log(UserId, applicationApplicationId, role);
+  // console.log(UserId, applicationApplicationId, role);
   return ApplicationUser.create({
     UserId,
     applicationApplicationId,
