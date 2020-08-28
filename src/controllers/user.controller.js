@@ -35,6 +35,14 @@ function signUp(req, res, next) {
     .catch((err) => next(err));
 }
 
+function createApplicationUser(req, res, next) {
+  const user = req.body;
+
+  applicationUserHandler(user)
+    .then((user) => user.success ? res.status(200).json({ success: true, user }) : res.status(200).json({ success: false, user }))
+    .catch((err) => next(err));
+}
+
 function verifyToken(req, res, next) {
   const token = req.body.token;
   if (!token) {
@@ -317,6 +325,19 @@ async function loginHandler(email, password) {
   let updatedUser = _.omit(user.dataValues, ["password", "createdAt", "updatedAt"]);
   // updatedUser.token = token;
   return updatedUser;
+}
+
+async function applicationUserHandler({userId, application, role}) {
+  console.log(userId, application, role);
+  if (userId && application && role) {
+    const applicationUser = await userService.addApplicationUser(userId, application, role);
+      if (!applicationUser) {
+        throw "something went wrong";
+      }
+      return applicationUser;
+  } else {
+    throw "missing field"
+  }
 }
 
 async function signUpHandler(user) {
@@ -740,6 +761,7 @@ module.exports = {
   getUser,
   getUserByUsername,
   resendEmail,
+  createApplicationUser,
   socialSignup,
   socialLogin,
   updatePassword,

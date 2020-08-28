@@ -11,6 +11,7 @@ app.post("/social_signup", userController.socialSignup);
 app.get("/user_name/:username", userController.getUserByUsername);
 app.get("/users/:email", userController.getUser);
 app.post("/resend_email",userController.resendEmail);
+app.post("/application_user",userController.createApplicationUser);
 // app.post('/verify_token', userController.verifyToken);
 
 app.post("/verify_email", userController.verifyEmail);
