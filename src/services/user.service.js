@@ -1,4 +1,4 @@
-const { User, ApplicationUser } = require("../models");
+const { User, ApplicationUser, Company } = require("../models");
 
 function createUser(user) {
   // console.log(user, "user created-------------------");
@@ -23,23 +23,29 @@ function getApplicationUserById(id) {
   );
 }
 function getApplicationUserByUserId(id) {
-  return ApplicationUser.findOne({ where: { userId: id } }).catch((err) =>
-    console.log(err)
-  );
+  return ApplicationUser.findOne({
+    where: { userId: id },
+    include: { model: Company },
+  }).catch((err) => console.log(err));
 }
 
 function updateUser(user, data) {
-  user.changed("updatedAt",true);
-  return user.update(data).catch((err) =>
-    console.log(err)
-  );
+  user.changed("updatedAt", true);
+  return user.update(data).catch((err) => console.log(err));
 }
 
-function addApplicationUser(UserId, applicationApplicationId, role) {
+function addApplicationUser(
+  UserId,
+  applicationApplicationId,
+  role,
+  verified = "0"
+) {
+  console.log(UserId, applicationApplicationId, role);
   return ApplicationUser.create({
     UserId,
     applicationApplicationId,
     role,
+    verified,
   }).catch((err) => console.log(err));
 }
 
@@ -49,10 +55,6 @@ function updateApplicationUser(UserId) {
       `UPDATE application_users SET verified = true WHERE UserId = '${UserId}'`
     )
     .catch((err) => console.log(err));
-}
-
-function getUserByUsername(username) {
-  return User.findOne({ where: { username } }).catch((err) => console.log(err));
 }
 
 function getUnverifiedUserByDate(startDate, endDate, offset, limit) {

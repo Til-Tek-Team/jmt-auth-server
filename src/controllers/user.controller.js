@@ -31,7 +31,11 @@ function signUp(req, res, next) {
     return;
   }
   signUpHandler(user)
-    .then((user) => user.success ? res.status(200).json({ success: true, user }) : res.status(200).json({ success: false, user }))
+    .then((user) =>
+      user.success
+        ? res.status(200).json({ success: true, user })
+        : res.status(200).json({ success: false, user })
+    )
     .catch((err) => next(err));
 }
 
@@ -215,13 +219,10 @@ function updatePassword(req, res, next) {
 }
 
 function getUserByEmail(req, res, next) {
-  // console.log("from get user by email");
   let email = req.params.email;
   if (!email) {
     return res.status(200).json({ success: false, error: "invalid request" });
   }
-
-  // console.log("this is the user name ------------------>", email);
 
   getUserByEmailHandler(email)
     .then((user) => res.status(200).json({ success: true, user }))
@@ -229,7 +230,6 @@ function getUserByEmail(req, res, next) {
 }
 
 function setPassword(req, res, next) {
-  // console.log(req.body);
   let { email, password } = req.body;
 
   if (!email || !password) {
@@ -280,7 +280,6 @@ function addCmpanyProfile(req, res, next) {
 }
 
 function checkUsername(req, res, next) {
-  // console.log(req.body);
   if (!req.body.username) {
     return res.status(200).json({ success: false, error: "invalid request" });
   }
@@ -297,15 +296,39 @@ function getUtcTime() {
   return utcDate;
 }
 
+function createNewApplicationUser(req, res, next) {
+  let { username, application, role, verified } = req.body;
+  if (!(username && application && role && verified)) {
+    return res.status(200).json({ success: false, error: "invalid request" });
+  }
+
+  createNewApplicationUserHandler(req.body)
+    .then((unique) => res.status(200).json({ success: true, unique }))
+    .catch((err) => next(err));
+}
+
+async function createNewApplicationUserHandler(user) {
+  let authUser = await userService.getUserByUserName(user.username);
+  let newApplicationUser = await userService.addApplicationUser(
+    authUser.id,
+    user.application,
+    user.role,
+    user.verified
+  );
+  // console.log(newApplicationUser);
+  if (newApplicationUser) {
+    return newApplicationUser;
+  }
+}
+
 async function loginHandler(email, password) {
   let user = await userService.getUserByUserName(email);
-  // console.log(user, email, password)
   if (!user) {
     throw "Email or Password incorrect";
   }
   let userCreated = moment(user.updatedAt);
   let curreTime = moment(Date.now());
- 
+
   const difference = curreTime.diff(userCreated, "minutes");
   if (!user.emailVerified && parseInt(difference) > 15) {
     throw "Check your confirmation email first";
@@ -321,9 +344,11 @@ async function loginHandler(email, password) {
     throw "email or password incorrect";
   }
 
-  // const token = jwt.sign({ sub: user.id }, CONSTANTS.JWTSECRET, { expiresIn: '24hr' });
-  let updatedUser = _.omit(user.dataValues, ["password", "createdAt", "updatedAt"]);
-  // updatedUser.token = token;
+  let updatedUser = _.omit(user.dataValues, [
+    "password",
+    "createdAt",
+    "updatedAt",
+  ]);
   return updatedUser;
 }
 
@@ -344,15 +369,8 @@ async function signUpHandler(user) {
   user.username = user.username ? user.username : user.email;
   const checkedUser = await checkUsernameUnique(user.username);
   if (!checkedUser.isUnique) {
-    return {...checkedUser, success: false};
+    return { ...checkedUser, success: false };
   }
-  // if (!user.username) {
-  //   user.username = user.email;
-  // } else {
-  //   if (!(await checkUsernameUnique(user.email))) {
-  //     throw "Username is already in use";
-  //   }
-  // }
 
   let createdUser = await userService.createUser(user);
   const token = jwt.sign({ sub: createdUser.id }, CONSTANTS.JWTEMAILSECRET);
@@ -406,7 +424,9 @@ async function resendEmailHandler(email) {
   if (!createToken) {
     throw "something went wrong";
   }
-  const updateUser = await userService.updateUser(user,{updatedAt:sequelize.fn("NOW")});
+  const updateUser = await userService.updateUser(user, {
+    updatedAt: sequelize.fn("NOW"),
+  });
   user.dataValues["emailVerificationToken"] = token;
 
   return user;
@@ -437,7 +457,6 @@ async function getUnverifiedUserByDate(startDate, endDate, offset, limit) {
     parseInt(offset) || 0,
     parseInt(limit) || 8
   );
-  // console.log(users);
   if (users) {
     const countUsers = await userService.countUnverifiedUser(
       startDate,
@@ -450,8 +469,6 @@ async function getUnverifiedUserByDate(startDate, endDate, offset, limit) {
 async function verifyEmailHandler(token) {
   let retriveToken = await tokenService.getToken(token);
 
-  //  console.log("retrived token value", retriveToken);
-
   if (!retriveToken) {
     throw "invalid token";
   }
@@ -459,13 +476,10 @@ async function verifyEmailHandler(token) {
   let tokenCreated = moment(retriveToken.createdAt);
   let curreTime = moment(Date.now());
   const difference = curreTime.diff(tokenCreated, "minutes");
-  //  console.log(tokenCreated,curreTime,difference);
   if (difference > 15) {
     throw "invalid token";
   }
   var decoded = jwt.verify(token, CONSTANTS.JWTEMAILSECRET);
-
-  // console.log("decoded token value", decoded);
 
   let userId = decoded.sub;
 
@@ -474,11 +488,8 @@ async function verifyEmailHandler(token) {
     throw "something went wrong";
   }
 
-  // console.log("retrived user value", user);
-
   let updatedUser = await userService.updateUser(user, { emailVerified: true });
   let updateApplicationUser = await userService.updateApplicationUser(userId);
-  // let updatedToken = tokenService.updateToken(retriveToken, { expired: true });
 
   if (!updatedUser || !updateApplicationUser) {
     throw "something went wrong";
@@ -517,10 +528,6 @@ async function changePasswordHandler(userId, password) {
     throw "user does not exist";
   }
 
-  // if(!user.emailVerified){
-  //     throw "verify your email to proceed";
-  // }
-
   const updatedUser = await userService.updateUser(user, {
     password: bcryptjs.hashSync(password, 10),
     emailVerified: true,
@@ -540,13 +547,15 @@ async function getUserHandler(email) {
     throw "user does not exist";
   }
   const application = await userService.getApplicationUserByUserId(user.id);
-  // user = {...user, applicationRole: 'SELLER'}
-  // return user;
   let temp = user.dataValues;
-  return { id: temp.id, username: temp.username,
-    email: temp.email, role: application.role, 
-    firstName: temp.firstName, lastName: temp.lastName,
-    applicationName: application.applicationApplicationId
+  return {
+    id: temp.id,
+    username: temp.username,
+    email: temp.email,
+    role: application.role,
+    firstName: temp.firstName,
+    lastName: temp.lastName,
+    applicationName: application.applicationApplicationId,
   };
 }
 
@@ -558,13 +567,24 @@ async function getByUsernameHandler(username) {
   }
 
   const application = await userService.getApplicationUserByUserId(user.id);
-  // user = {...user, applicationRole: 'SELLER'}
-  // return user;
+  let company = {};
+  if (application.dataValues.company) {
+    let c = application.dataValues.company.dataValues;
+    company["companyName"] = c.companyName;
+    company["address"] = c.address;
+    company["industryType"] = c.industryType;
+  }
   let temp = user.dataValues;
-  return { id: temp.id, username: temp.username,
-    email: temp.email, role: application.role, 
-    firstName: temp.firstName, lastName: temp.lastName,
-    applicationName: application.applicationApplicationId
+  return {
+    id: temp.id,
+    username: temp.username,
+    email: temp.email,
+    role: application.role,
+    firstName: temp.firstName,
+    lastName: temp.lastName,
+    applicationName: application.applicationApplicationId,
+    phoneNumber: temp.phoneNumber,
+    ...company,
   };
 }
 
@@ -611,7 +631,6 @@ async function socialLoginHandler({ email }) {
 
 async function getUserByEmailHandler(email) {
   const user = await userService.getUserByUserName(email);
-  // console.log("this is the user---------------->", user);
   if (!user) {
     throw "user is not found";
   }
@@ -653,15 +672,16 @@ async function checkUsernameUnique(username) {
   const user = await userService.getUserByUserName(username);
   if (user) {
     const application = await userService.getApplicationUserByUserId(user.id);
-    // user = {...user, applicationRole: 'SELLER'}
-    // return user;
     let temp = user.dataValues;
-    // console.log(application.dataValues)
-    return { isUnique: false,
-      id: temp.id, username: temp.username,
-      email: temp.email, role: application.role, 
-      firstName: temp.firstName, lastName: temp.lastName,
-      applicationName: application.applicationApplicationId
+    return {
+      isUnique: false,
+      id: temp.id,
+      username: temp.username,
+      email: temp.email,
+      role: application.role,
+      firstName: temp.firstName,
+      lastName: temp.lastName,
+      applicationName: application.applicationApplicationId,
     };
   }
 
@@ -669,7 +689,6 @@ async function checkUsernameUnique(username) {
 }
 
 async function setPasswordHandler(email, password) {
-  // console.log(email, password);
   const user = await userService.getUserByEmail(email);
   if (!user) {
     throw "user is not found";
@@ -700,8 +719,6 @@ async function updateUserHandler(user) {
 }
 
 async function addCompanyProfileHandler(company) {
-  // console.log(company);
-  // company.applicationApplicationId = company.ApplicationId;
   const appUser = await paymentService.getApplicationUserByUserIdAndApplication(
     company.user_id,
     company.applicationApplicationId
@@ -725,7 +742,6 @@ async function addCompanyProfileHandler(company) {
   paymentInfo.currencyType = "peso";
   paymentInfo.createdAt = new Date();
   paymentInfo.updatedAt = new Date();
-  // console.log(paymentInfo, "nfo");
   const addCompany = await paymentService.addCompany(company);
   const updatedUser = await paymentService.updateApplicationUser(appUser, {
     ...appUser.dataValues,
@@ -772,4 +788,5 @@ module.exports = {
   checkUsername,
   getUnverifiedUser,
   getUnverifiedUserDate,
+  createNewApplicationUser,
 };
