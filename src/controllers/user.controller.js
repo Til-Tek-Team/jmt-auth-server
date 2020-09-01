@@ -43,7 +43,11 @@ function createApplicationUser(req, res, next) {
   const user = req.body;
 
   applicationUserHandler(user)
-    .then((user) => user.success ? res.status(200).json({ success: true, user }) : res.status(200).json({ success: false, user }))
+    .then((user) =>
+      user.success
+        ? res.status(200).json({ success: true, user })
+        : res.status(200).json({ success: false, user })
+    )
     .catch((err) => next(err));
 }
 
@@ -244,7 +248,7 @@ function setPassword(req, res, next) {
 function updateUser(req, res, next) {
   let { firstName, lastName, phoneNumber, id } = req.body;
 
-  if (!firstName || !lastName || !phoneNumber || !id) {
+  if ((!firstName && !lastName && !phoneNumber) || !id) {
     return res.status(200).json({ success: false, error: "invalid request" });
   }
 
@@ -352,16 +356,20 @@ async function loginHandler(email, password) {
   return updatedUser;
 }
 
-async function applicationUserHandler({userId, application, role}) {
+async function applicationUserHandler({ userId, application, role }) {
   console.log(userId, application, role);
   if (userId && application && role) {
-    const applicationUser = await userService.addApplicationUser(userId, application, role);
-      if (!applicationUser) {
-        throw "something went wrong";
-      }
-      return applicationUser;
+    const applicationUser = await userService.addApplicationUser(
+      userId,
+      application,
+      role
+    );
+    if (!applicationUser) {
+      throw "something went wrong";
+    }
+    return applicationUser;
   } else {
-    throw "missing field"
+    throw "missing field";
   }
 }
 
