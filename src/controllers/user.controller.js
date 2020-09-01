@@ -243,8 +243,7 @@ function setPassword(req, res, next) {
 
 function updateUser(req, res, next) {
   let { firstName, lastName, phoneNumber, id } = req.body;
-
-  if (!firstName || !lastName || !phoneNumber || !id) {
+  if ((!firstName && !lastName && !phoneNumber) || !id) {
     return res.status(200).json({ success: false, error: "invalid request" });
   }
 
