@@ -257,24 +257,11 @@ function updateUser(req, res, next) {
     .catch((err) => next(err));
 }
 
-function addCmpanyProfile(req, res, next) {
+function addCompanyProfile(req, res, next) {
   let company = req.body;
-  let {
-    id,
-    companyName,
-    address,
-    industryType,
-    applicationApplicationId,
-    user_id,
-  } = company;
-  if (
-    !id ||
-    !companyName ||
-    !address ||
-    !industryType ||
-    !applicationApplicationId ||
-    !user_id
-  ) {
+  // console.log(company, "company")
+  let { id, companyName, applicationApplicationId, user_id } = company;
+  if (!id || !companyName || !applicationApplicationId || !user_id) {
     return res.status(200).json({ success: false, error: "invalid request" });
   }
 
@@ -357,7 +344,7 @@ async function loginHandler(email, password) {
 }
 
 async function applicationUserHandler({ userId, application, role }) {
-  console.log(userId, application, role);
+  // console.log(userId, application, role);
   if (userId && application && role) {
     const applicationUser = await userService.addApplicationUser(
       userId,
@@ -731,6 +718,7 @@ async function addCompanyProfileHandler(company) {
     company.user_id,
     company.applicationApplicationId
   );
+  // console.log(appUser, 'appuser')
 
   if (!appUser) {
     throw "user is not found";
@@ -792,7 +780,7 @@ module.exports = {
   getUserByEmail,
   setPassword,
   updateUser,
-  addCmpanyProfile,
+  addCompanyProfile,
   checkUsername,
   getUnverifiedUser,
   getUnverifiedUserDate,

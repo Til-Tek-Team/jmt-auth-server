@@ -2,7 +2,7 @@
   "development": {
     "username": "root",
     "password": "password",
-    "database": "test_auth_server",
+    "database": "temp_auth_server",
     "host": "192.168.0.10",
     "dialect": "mysql",
     "operatorsAliases": false
