@@ -259,9 +259,9 @@ function updateUser(req, res, next) {
 
 function addCompanyProfile(req, res, next) {
   let company = req.body;
-  // console.log(company, "company")
-  let { id, companyName, applicationApplicationId, user_id } = company;
-  if (!id || !companyName || !applicationApplicationId || !user_id) {
+  // console.log(req.body);
+  let { companyName, applicationApplicationId, user_id } = company;
+  if (!companyName || !applicationApplicationId || !user_id) {
     return res.status(200).json({ success: false, error: "invalid request" });
   }
 
@@ -714,6 +714,7 @@ async function updateUserHandler(user) {
 }
 
 async function addCompanyProfileHandler(company) {
+  company.id = uuid4();
   const appUser = await paymentService.getApplicationUserByUserIdAndApplication(
     company.user_id,
     company.applicationApplicationId
