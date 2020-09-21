@@ -470,8 +470,8 @@ async function verifyEmailHandler(token) {
 
   let tokenCreated = moment(retriveToken.createdAt);
   let curreTime = moment(Date.now());
-  const difference = curreTime.diff(tokenCreated, "minutes");
-  if (difference > 15) {
+  const difference = curreTime.diff(tokenCreated, "hours");
+  if (difference > 12) {
     throw "invalid token";
   }
   var decoded = jwt.verify(token, CONSTANTS.JWTEMAILSECRET);
