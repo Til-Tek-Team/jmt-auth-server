@@ -261,7 +261,7 @@ function addCompanyProfile(req, res, next) {
   let company = req.body;
   // console.log(req.body);
   let { companyName, applicationApplicationId, user_id } = company;
-  if (!companyName || !applicationApplicationId || !user_id) {
+  if (!(companyName || companyName === '') || !applicationApplicationId || !user_id) {
     return res.status(200).json({ success: false, error: "invalid request" });
   }
 
