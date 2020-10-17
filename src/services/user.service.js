@@ -18,9 +18,7 @@ function getUserById(id) {
 }
 
 function getApplicationUserById(id) {
-  return ApplicationUser.findOne({ where: { id } }).catch((err) =>
-    console.log(err)
-  );
+  return ApplicationUser.findOne({ where: { id } }).catch((err) => console.log(err));
 }
 function getApplicationUserByUserId(id) {
   return ApplicationUser.findOne({
@@ -34,26 +32,20 @@ function updateUser(user, data) {
   return user.update(data).catch((err) => console.log(err));
 }
 
-function addApplicationUser(
-  UserId,
-  applicationApplicationId,
-  role,
-  verified = "0"
-) {
+function addApplicationUser(UserId, applicationApplicationId, role, verified = "0", CompanyId) {
   // console.log(UserId, applicationApplicationId, role);
   return ApplicationUser.create({
     UserId,
     applicationApplicationId,
     role,
     verified,
+    CompanyId,
   }).catch((err) => console.log(err));
 }
 
 function updateApplicationUser(UserId) {
   return sequelize
-    .query(
-      `UPDATE application_users SET verified = true WHERE UserId = '${UserId}'`
-    )
+    .query(`UPDATE application_users SET verified = true WHERE UserId = '${UserId}'`)
     .catch((err) => console.log(err));
 }
 

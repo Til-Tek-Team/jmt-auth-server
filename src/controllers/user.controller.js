@@ -94,9 +94,7 @@ function getUnverifiedUserDate(req, res, next) {
     .then((user) =>
       user
         ? res.status(200).json({ success: true, user })
-        : res
-            .status(200)
-            .json({ success: false, error: "Somethin went wrong " })
+        : res.status(200).json({ success: false, error: "Somethin went wrong " })
     )
     .catch((err) => next("Internal Server Error! Try again"));
 }
@@ -118,9 +116,7 @@ function changePasswordRequest(req, res, next) {
   }
 
   changePasswordRequestHundler(userId)
-    .then((changePasswordToken) =>
-      res.status(200).json({ success: true, changePasswordToken })
-    )
+    .then((changePasswordToken) => res.status(200).json({ success: true, changePasswordToken }))
     .catch((err) => next(err));
 }
 
@@ -132,9 +128,7 @@ function changePassword(req, res, next) {
   }
 
   if (password !== confirmPassword) {
-    res
-      .status(200)
-      .json({ success: false, error: "passwords should be the same" });
+    res.status(200).json({ success: false, error: "passwords should be the same" });
     return;
   }
 
@@ -166,23 +160,9 @@ function getUserByUsername(req, res, next) {
 }
 
 function socialSignup(req, res, next) {
-  let {
-    email,
-    firstName,
-    lastName,
-    phoneNumber,
-    socialId,
-    APPLICATION,
-    role,
-  } = req.body;
+  let { email, firstName, lastName, phoneNumber, socialId, APPLICATION, role } = req.body;
 
-  if (
-    !email ||
-    phoneNumber == undefined ||
-    !socialId ||
-    !APPLICATION ||
-    !role
-  ) {
+  if (!email || phoneNumber == undefined || !socialId || !APPLICATION || !role) {
     return res.status(200).json({ success: false, error: "invalid request" });
   }
 
@@ -261,7 +241,7 @@ function addCompanyProfile(req, res, next) {
   let company = req.body;
   // console.log(req.body);
   let { companyName, applicationApplicationId, user_id } = company;
-  if (!(companyName || companyName === '') || !applicationApplicationId || !user_id) {
+  if (!(companyName || companyName === "") || !applicationApplicationId || !user_id) {
     return res.status(200).json({ success: false, error: "invalid request" });
   }
 
@@ -299,12 +279,16 @@ function createNewApplicationUser(req, res, next) {
 }
 
 async function createNewApplicationUserHandler(user) {
-  let authUser = await userService.getUserByUserName(user.username);
+  // console.log(user);
+  let u = await userService.getUserByUserName(user.username);
+  let appUser = await userService.getApplicationUserByUserId(u.id);
+  // console.log(appUser.dataValues);
   let newApplicationUser = await userService.addApplicationUser(
-    authUser.id,
+    u.id,
     user.application,
     user.role,
-    user.verified
+    user.verified,
+    appUser.CompanyId
   );
   // console.log(newApplicationUser);
   if (newApplicationUser) {
@@ -335,22 +319,14 @@ async function loginHandler(email, password) {
     throw "email or password incorrect";
   }
 
-  let updatedUser = _.omit(user.dataValues, [
-    "password",
-    "createdAt",
-    "updatedAt",
-  ]);
+  let updatedUser = _.omit(user.dataValues, ["password", "createdAt", "updatedAt"]);
   return updatedUser;
 }
 
 async function applicationUserHandler({ userId, application, role }) {
   // console.log(userId, application, role);
   if (userId && application && role) {
-    const applicationUser = await userService.addApplicationUser(
-      userId,
-      application,
-      role
-    );
+    const applicationUser = await userService.addApplicationUser(userId, application, role);
     if (!applicationUser) {
       throw "something went wrong";
     }
@@ -428,10 +404,7 @@ async function resendEmailHandler(email) {
 }
 
 async function getUnverifiedUserByDateOnly(startDate, endDate) {
-  const users = await userService.getUnverifiedUserByDateOnly(
-    startDate,
-    endDate
-  );
+  const users = await userService.getUnverifiedUserByDateOnly(startDate, endDate);
 
   let user = users.map((items) => {
     const token = jwt.sign({ sub: items.id }, CONSTANTS.JWTEMAILSECRET);
@@ -453,10 +426,7 @@ async function getUnverifiedUserByDate(startDate, endDate, offset, limit) {
     parseInt(limit) || 8
   );
   if (users) {
-    const countUsers = await userService.countUnverifiedUser(
-      startDate,
-      endDate
-    );
+    const countUsers = await userService.countUnverifiedUser(startDate, endDate);
     let total = Object.values(countUsers[0])[0];
     return { users, total };
   }
@@ -744,9 +714,7 @@ async function addCompanyProfileHandler(company) {
     ...appUser.dataValues,
     CompanyId: company.id,
   });
-  const paymentInfoAdd = await paymentService.addPaymentInformation(
-    paymentInfo
-  );
+  const paymentInfoAdd = await paymentService.addPaymentInformation(paymentInfo);
 
   if (!updatedUser || !addCompany || !paymentInfoAdd) {
     throw "something went wrong";
