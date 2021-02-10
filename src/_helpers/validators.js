@@ -5,7 +5,7 @@ function validateUser(data) {
   let valid = true;
   const fields = ["email", "phoneNumber", "password", "firstName", "lastName"];
   const keys = _.keys(data);
-  fields.map(field => {
+  fields.map((field) => {
     if (keys.includes(field)) {
       return;
     }
@@ -33,7 +33,7 @@ function validatePlanType(planType) {
   let valid = true;
   const fields = ["type", "name", "value", "amount"];
   const keys = _.keys(planType);
-  fields.map(field => {
+  fields.map((field) => {
     if (keys.includes(field)) {
       return;
     }
@@ -67,10 +67,10 @@ function validatePaymentInformation(data) {
     "creditCardNumber",
     "securityCode",
     "cvc",
-    "currencyType"
+    "currencyType",
   ];
   const keys = _.keys(data);
-  fields.map(field => {
+  fields.map((field) => {
     if (keys.includes(field)) {
       return;
     }
@@ -81,11 +81,7 @@ function validatePaymentInformation(data) {
   }
   _.map(data, (value, key) => {
     if (key == "cvc") {
-      if (
-        !validator.isNumeric(value + "") ||
-        (value + "").length > 4 ||
-        (value + "").length < 3
-      ) {
+      if (!validator.isNumeric(value + "") || (value + "").length > 4 || (value + "").length < 3) {
         valid = false;
       }
     } else if (key == "creditCardNumber") {
@@ -102,8 +98,49 @@ function validatePaymentInformation(data) {
   return valid;
 }
 
+function validatePaymentInfo(data) {
+  let valid = true;
+  const fields = [
+    "firstName",
+    "lastName",
+    "username",
+    "city",
+    "state",
+    "zipCode",
+    "cardNumber",
+    "securityCode",
+    "cvc",
+    "expDate",
+    "cardType",
+  ];
+  const keys = _.keys(data);
+  fields.map((field) => {
+    if (keys.includes(field)) {
+      return;
+    }
+    valid = false;
+  });
+  if (!valid) {
+    return valid;
+  }
+  _.map(data, (value, key) => {
+    if (key == "cvc") {
+      if (!validator.isNumeric(value + "") || (value + "").length > 4 || (value + "").length < 3) {
+        valid = false;
+      }
+    } else {
+      if (validator.isEmpty(value + "")) {
+        valid = false;
+      }
+    }
+  });
+
+  return valid;
+}
+
 module.exports = {
   validateUser,
   validatePaymentInformation,
-  validatePlanType
+  validatePlanType,
+  validatePaymentInfo,
 };

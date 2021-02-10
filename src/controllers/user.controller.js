@@ -235,6 +235,15 @@ async function signUpHandler(user) {
   let createdUser = await userService.createUser(user);
   const token = jwt.sign({ sub: createdUser.id }, CONSTANTS.JWTEMAILSECRET);
   let createToken = await tokenService.createToken({ token });
+  let company;
+  if (user.APPLICATION == "TALGUU") {
+    company = await userService.addCompany({
+      companyName: "UNKNOWN",
+      address: "UNKNOWN",
+      industryType: "UNKNOWN",
+      applicationApplicationId: "TALGUU",
+    });
+  }
 
   if (!createdUser || !createToken) {
     throw "something went wrong";
@@ -249,7 +258,8 @@ async function signUpHandler(user) {
     const applicationUser = await userService.addApplicationUser(
       createdUser.id,
       user.APPLICATION,
-      user.role
+      user.role,
+      company ? company.id : null
     );
 
     if (!applicationUser) {

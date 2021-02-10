@@ -1,8 +1,7 @@
-const {
-  validatePaymentInformation,
-} = require("../_helpers/validators");
+const { validatePaymentInformation, validatePaymentInfo } = require("../_helpers/validators");
 const uuid4 = require("uuid/v4");
 const paymentService = require("../services/payment.service");
+const userService = require("../services/user.service");
 var moment = require("moment");
 
 function addPaymentInformation(req, res, next) {
@@ -14,10 +13,69 @@ function addPaymentInformation(req, res, next) {
   }
 
   addPaymentInformationHandler(payInfo)
-    .then(payment_information =>
-      res.status(200).json({ success: true, payment_information })
-    )
-    .catch(err => next(err));
+    .then((payment_information) => res.status(200).json({ success: true, payment_information }))
+    .catch((err) => next(err));
+}
+
+function createPaymentInfo(req, res, next) {
+  const paymentInfo = req.body;
+  let valid = validatePaymentInfo(paymentInfo);
+  console.log(valid);
+  if (!valid) {
+    res.status(200).json({ success: false, error: "invalid request" });
+    return;
+  }
+
+  createPaymentInfoHandler(paymentInfo)
+    .then((payment_info) => res.status(200).json({ success: true, payment_info }))
+    .catch((err) => next(err));
+}
+
+function getUserPaymentInfos(req, res, next) {
+  let { username } = req.params;
+
+  if (!username) {
+    res.status(200).json({ success: false, error: "invalid request" });
+    return;
+  }
+  getUserPaymentInfosHandler(username)
+    .then((payment_infos) => res.status(200).json({ success: true, payment_infos }))
+    .catch((err) => next(err));
+}
+
+function getPaymentInfo(req, res, next) {
+  let { paymentInfoId } = req.params;
+
+  if (!paymentInfoId) {
+    res.status(200).json({ success: false, error: "invalid request" });
+    return;
+  }
+
+  getPaymentInfoHandler(paymentInfoId)
+    .then((payment_info) => res.status(200).json({ success: true, payment_info }))
+    .catch((err) => next(err));
+}
+
+async function getPaymentInfoHandler(paymentInfoId) {
+  let paymentInfo = await paymentService.getPaymentInfoById(paymentInfoId);
+  if (!paymentInfo) throw "invalid request";
+
+  return paymentInfo;
+}
+
+async function getUserPaymentInfosHandler(username) {
+  let user = await userService.getUserByUserName(username);
+  if (!user) throw "invalid request";
+
+  let appUser = await paymentService.getApplicationUserByUserId(user.id);
+  if (!appUser) throw "invalid request";
+
+  let paymentInfos = await paymentService.getUserPaymentInfos(
+    appUser.CompanyId ? appUser.CompanyId : appUser.UserId
+  );
+  if (!paymentInfos) throw "server error";
+
+  return paymentInfos;
 }
 
 function getUserPaymentInformations(req, res, next) {
@@ -28,10 +86,8 @@ function getUserPaymentInformations(req, res, next) {
   }
 
   getUserPaymentInformationsHandler(userId)
-    .then(payment_informations =>
-      res.status(200).json({ success: true, payment_informations })
-    )
-    .catch(err => next(err));
+    .then((payment_informations) => res.status(200).json({ success: true, payment_informations }))
+    .catch((err) => next(err));
 }
 
 function buyPlan(req, res, next) {
@@ -43,8 +99,26 @@ function buyPlan(req, res, next) {
   }
 
   buyPlanHandler(req.body)
-    .then(subscription => res.status(200).json({ success: true, subscription }))
-    .catch(err => next(err));
+    .then((subscription) => res.status(200).json({ success: true, subscription }))
+    .catch((err) => next(err));
+}
+
+async function createPaymentInfoHandler(paymentInfo) {
+  let user = await userService.getUserByUserName(paymentInfo.username);
+  if (!user) throw "invalid request";
+
+  let appUser = await paymentService.getApplicationUserByUserId(user.id);
+  if (!appUser) throw "invalid request";
+
+  let dbPaymentInfo = await paymentService.createPaymentInfo({
+    ...paymentInfo,
+    companyId: appUser.CompanyId ? appUser.CompanyId : appUser.UserId,
+    userId: user.id,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  });
+  if (!dbPaymentInfo) return "server error";
+  return dbPaymentInfo;
 }
 
 async function addPaymentInformationHandler(payInfo) {
@@ -56,10 +130,7 @@ async function addPaymentInformationHandler(payInfo) {
 
   payInfo.ownerReference = user.CompanyId ? user.CompanyId : user.UserId;
 
-  let foundCard = await checkCardUnique(
-    payInfo.creditCardNumber,
-    payInfo.ownerReference
-  );
+  let foundCard = await checkCardUnique(payInfo.creditCardNumber, payInfo.ownerReference);
 
   if (foundCard) {
     throw "Information already registered for this user";
@@ -67,11 +138,9 @@ async function addPaymentInformationHandler(payInfo) {
 
   // payInfo.id = uuid4();
   const updatedUser = await paymentService.updateAppUser(user, {
-    PaymentIdentifier: payInfo.ownerReference
+    PaymentIdentifier: payInfo.ownerReference,
   });
-  const paymentInformation = await paymentService.addPaymentInformation(
-    payInfo
-  );
+  const paymentInformation = await paymentService.addPaymentInformation(payInfo);
   if (!paymentInformation || !updatedUser) {
     throw "something went wrong";
   }
@@ -89,18 +158,13 @@ async function getUserPaymentInformationsHandler(userId) {
     return [];
   }
 
-  const paymentInfos = await paymentService.getUserPaymentInformations(
-    user.PaymentIdentifier
-  );
+  const paymentInfos = await paymentService.getUserPaymentInformations(user.PaymentIdentifier);
   if (!paymentInfos) {
     throw "something went wrong";
   }
 
   return paymentInfos;
 }
-
-
-
 
 async function checkCardUnique(creditCardNumber, ownerReference) {
   const foundCard = await paymentService.getUserPaymentInformation(
@@ -110,9 +174,11 @@ async function checkCardUnique(creditCardNumber, ownerReference) {
   return !!foundCard;
 }
 
-
 module.exports = {
   addPaymentInformation,
   getUserPaymentInformations,
   buyPlan,
+  createPaymentInfo,
+  getUserPaymentInfos,
+  getPaymentInfo,
 };
