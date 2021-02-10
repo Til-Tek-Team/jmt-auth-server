@@ -6,31 +6,15 @@ const Application = sequelize.import("./application.js");
 const ApplicationUser = sequelize.import("./applicationUser.js");
 const PaymentInformation = sequelize.import("./paymentInformation.js");
 const Company = sequelize.import("./company.js");
-const Subscription = sequelize.import("./subscription.js");
-const SubscriptionTransaction = sequelize.import(
-  "./subscriptionTransaction.js"
-);
-const PaymentPlanTypes = sequelize.import("./paymentPlanTypes.js");
-const Balance = sequelize.import("./balanceAccount.js")
+
 ApplicationUser.belongsTo(User);
 User.hasMany(ApplicationUser);
-
-// ApplicationUser.belongsTo(Application);
-// Application.hasMany(ApplicationUser);
 ApplicationUser.belongsTo(Company);
-// ApplicationUser.belongsTo(Application);
-SubscriptionTransaction.belongsTo(ApplicationUser);
-// ApplicationUser.hasMany(SubscriptionTransaction);
 
-SubscriptionTransaction.belongsTo(PaymentInformation);
-// PaymentInformation.hasMany(SubscriptionTransaction);
 
-// Subscription.belongsTo(PaymentInformation);
-// PaymentInformation.hasMany(Subscription);
 
 Company.belongsTo(Application);
 Application.hasMany(Company);
-// Balance.belongsTo(ApplicationUser)
 
 module.exports = {
   User,
@@ -39,8 +23,4 @@ module.exports = {
   ApplicationUser,
   PaymentInformation,
   Company,
-  Subscription,
-  SubscriptionTransaction,
-  PaymentPlanTypes,
-  Balance
 };

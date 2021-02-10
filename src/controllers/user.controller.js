@@ -7,8 +7,6 @@ const CONSTANTS = require("../../constants.js");
 const { validateUser } = require("../_helpers/validators");
 const _ = require("lodash");
 const uuid4 = require("uuid/v4");
-var moment = require("moment");
-var sequelize = require("sequelize");
 
 function login(req, res, next) {
   const { email, password } = req.body;
@@ -18,8 +16,8 @@ function login(req, res, next) {
   }
 
   loginHandler(email, password)
-    .then((user) => res.status(200).json({ success: true, user }))
-    .catch((err) => next(err));
+    .then(user => res.status(200).json({ success: true, user }))
+    .catch(err => next(err));
 }
 
 function signUp(req, res, next) {
@@ -30,25 +28,10 @@ function signUp(req, res, next) {
     res.status(200).json({ success: false, error: "invalid request" });
     return;
   }
+
   signUpHandler(user)
-    .then((user) =>
-      user.success
-        ? res.status(200).json({ success: true, user })
-        : res.status(200).json({ success: false, user })
-    )
-    .catch((err) => next(err));
-}
-
-function createApplicationUser(req, res, next) {
-  const user = req.body;
-
-  applicationUserHandler(user)
-    .then((user) =>
-      user.success
-        ? res.status(200).json({ success: true, user })
-        : res.status(200).json({ success: false, user })
-    )
-    .catch((err) => next(err));
+    .then(user => res.status(200).json({ success: true, user }))
+    .catch(err => next(err));
 }
 
 function verifyToken(req, res, next) {
@@ -58,54 +41,18 @@ function verifyToken(req, res, next) {
     return;
   }
   verifyTokenHandler(token)
-    .then((user) => res.status(200).json({ success: true, user }))
-    .catch((err) => next(err));
+    .then(user => res.status(200).json({ success: true, user }))
+    .catch(err => next(err));
 }
 
-function resendEmail(req, res, next) {
-  const email = req.body.email;
-  if (!email) {
-    res.status(200).json({ success: false, error: "invalid request" });
-    return;
-  }
-
-  resendEmailHandler(email)
-    .then((user) => res.status(200).json({ success: true, user }))
-    .catch((err) => next(err));
-}
-
-function getUnverifiedUser(req, res, next) {
-  getUnverifiedUserByDate(
-    req.query.startDate,
-    req.query.endDate,
-    req.query.offset || 0,
-    req.query.limit || 8
-  )
-    .then((user) =>
-      user
-        ? res.status(200).json({ success: true, user })
-        : res.status(200).json({ success: false, error: "Somethin went wrong" })
-    )
-    .catch((err) => next("Internal Server Error! Try again"));
-}
-
-function getUnverifiedUserDate(req, res, next) {
-  getUnverifiedUserByDateOnly(req.query.startDate, req.query.endDate)
-    .then((user) =>
-      user
-        ? res.status(200).json({ success: true, user })
-        : res.status(200).json({ success: false, error: "Somethin went wrong " })
-    )
-    .catch((err) => next("Internal Server Error! Try again"));
-}
 function verifyEmail(req, res, next) {
   const token = req.body.token;
   if (!token) {
   }
 
   verifyEmailHandler(token)
-    .then((user) => res.status(200).json({ success: true, user }))
-    .catch((err) => next(err));
+    .then(user => res.status(200).json({ success: true, user }))
+    .catch(err => next(err));
 }
 
 function changePasswordRequest(req, res, next) {
@@ -116,8 +63,10 @@ function changePasswordRequest(req, res, next) {
   }
 
   changePasswordRequestHundler(userId)
-    .then((changePasswordToken) => res.status(200).json({ success: true, changePasswordToken }))
-    .catch((err) => next(err));
+    .then(changePasswordToken =>
+      res.status(200).json({ success: true, changePasswordToken })
+    )
+    .catch(err => next(err));
 }
 
 function changePassword(req, res, next) {
@@ -128,13 +77,15 @@ function changePassword(req, res, next) {
   }
 
   if (password !== confirmPassword) {
-    res.status(200).json({ success: false, error: "passwords should be the same" });
+    res
+      .status(200)
+      .json({ success: false, error: "passwords should be the same" });
     return;
   }
 
   changePasswordHandler(id, password)
     .then(() => res.status(200).json({ success: true }))
-    .catch((err) => next(err));
+    .catch(err => next(err));
 }
 
 function getUser(req, res, next) {
@@ -144,25 +95,28 @@ function getUser(req, res, next) {
   }
 
   getUserHandler(email)
-    .then((user) => res.status(200).json({ success: true, user }))
-    .catch((err) => next(err));
-}
-
-function getUserByUsername(req, res, next) {
-  const username = req.params.username;
-  if (!username) {
-    return res.status(200).json({ success: false, error: "invalid request" });
-  }
-
-  getByUsernameHandler(username)
-    .then((user) => res.status(200).json({ success: true, user }))
-    .catch((err) => next(err));
+    .then(user => res.status(200).json({ success: true, user }))
+    .catch(err => next(err));
 }
 
 function socialSignup(req, res, next) {
-  let { email, firstName, lastName, phoneNumber, socialId, APPLICATION, role } = req.body;
+  let {
+    email,
+    firstName,
+    lastName,
+    phoneNumber,
+    socialId,
+    APPLICATION,
+    role
+  } = req.body;
 
-  if (!email || phoneNumber == undefined || !socialId || !APPLICATION || !role) {
+  if (
+    !email ||
+    phoneNumber == undefined ||
+    !socialId ||
+    !APPLICATION ||
+    !role
+  ) {
     return res.status(200).json({ success: false, error: "invalid request" });
   }
 
@@ -173,10 +127,10 @@ function socialSignup(req, res, next) {
     phoneNumber,
     socialId,
     APPLICATION,
-    role,
+    role
   })
-    .then((user) => res.status(200).json({ success: true, user }))
-    .catch((err) => next(err));
+    .then(user => res.status(200).json({ success: true, user }))
+    .catch(err => next(err));
 }
 
 function socialLogin(req, res, next) {
@@ -186,8 +140,8 @@ function socialLogin(req, res, next) {
   }
 
   socialLoginHandler(req.body)
-    .then((user) => res.status(200).json({ success: true, user }))
-    .catch((err) => next(err));
+    .then(user => res.status(200).json({ success: true, user }))
+    .catch(err => next(err));
 }
 
 function updatePassword(req, res, next) {
@@ -198,22 +152,24 @@ function updatePassword(req, res, next) {
   }
 
   updatePasswordHandler(id, oldPassword, newPassword)
-    .then((success) => res.status(200).json({ success }))
-    .catch((err) => next(err));
+    .then(success => res.status(200).json({ success }))
+    .catch(err => next(err));
 }
 
 function getUserByEmail(req, res, next) {
+  // console.log("from get user by email");
   let email = req.params.email;
   if (!email) {
     return res.status(200).json({ success: false, error: "invalid request" });
   }
 
   getUserByEmailHandler(email)
-    .then((user) => res.status(200).json({ success: true, user }))
-    .catch((err) => next(err));
+    .then(user => res.status(200).json({ success: true, user }))
+    .catch(err => next(err));
 }
 
 function setPassword(req, res, next) {
+  // console.log(req.body);
   let { email, password } = req.body;
 
   if (!email || !password) {
@@ -221,96 +177,67 @@ function setPassword(req, res, next) {
   }
 
   setPasswordHandler(email, password)
-    .then((success) => res.status(200).json({ success }))
-    .catch((err) => next(err));
+    .then(success => res.status(200).json({ success }))
+    .catch(err => next(err));
 }
 
 function updateUser(req, res, next) {
   let { firstName, lastName, phoneNumber, id } = req.body;
 
-  if ((!firstName && !lastName && !phoneNumber) || !id) {
+  if (!firstName || !lastName || !phoneNumber || !id) {
     return res.status(200).json({ success: false, error: "invalid request" });
   }
 
   updateUserHandler({ firstName, lastName, phoneNumber, id })
-    .then((user) => res.status(200).json({ success: true, user }))
-    .catch((err) => next(err));
+    .then(user => res.status(200).json({ success: true, user }))
+    .catch(err => next(err));
 }
 
-function addCompanyProfile(req, res, next) {
+function addCmpanyProfile(req, res, next) {
   let company = req.body;
-  // console.log(req.body);
-  let { companyName, applicationApplicationId, user_id } = company;
-  if (!(companyName || companyName === "") || !applicationApplicationId || !user_id) {
+  let {
+    id,
+    companyName,
+    address,
+    industryType,
+    applicationApplicationId,
+    user_id
+  } = company;
+  if (
+    !id ||
+    !companyName ||
+    !address ||
+    !industryType ||
+    !applicationApplicationId ||
+    !user_id
+  ) {
     return res.status(200).json({ success: false, error: "invalid request" });
   }
 
   addCompanyProfileHandler(company)
-    .then((company) => res.status(200).json({ success: true, company }))
-    .catch((err) => next(err));
+    .then(company => res.status(200).json({ success: true, company }))
+    .catch(err => next(err));
 }
 
 function checkUsername(req, res, next) {
+  console.log(req.body);
   if (!req.body.username) {
     return res.status(200).json({ success: false, error: "invalid request" });
   }
 
   checkUsernameHandler(req.body.username)
-    .then((unique) => res.status(200).json({ success: true, unique }))
-    .catch((err) => next(err));
-}
-
-function getUtcTime() {
-  let d = new Date();
-  let utcTime = d.getTime() + d.getTimezoneOffset() * 60000;
-  let utcDate = moment(new Date(utcTime)).format("YYYY-MM-DD HH:mm:ss");
-  return utcDate;
-}
-
-function createNewApplicationUser(req, res, next) {
-  let { username, application, role, verified } = req.body;
-  if (!(username && application && role && verified)) {
-    return res.status(200).json({ success: false, error: "invalid request" });
-  }
-
-  createNewApplicationUserHandler(req.body)
-    .then((unique) => res.status(200).json({ success: true, unique }))
-    .catch((err) => next(err));
-}
-
-async function createNewApplicationUserHandler(user) {
-  // console.log(user);
-  let u = await userService.getUserByUserName(user.username);
-  let appUser = await userService.getApplicationUserByUserId(u.id);
-  // console.log(appUser.dataValues);
-  let newApplicationUser = await userService.addApplicationUser(
-    u.id,
-    user.application,
-    user.role,
-    user.verified,
-    appUser.CompanyId
-  );
-  // console.log(newApplicationUser);
-  if (newApplicationUser) {
-    return newApplicationUser;
-  }
+    .then(unique => res.status(200).json({ success: true, unique }))
+    .catch(err => next(err));
 }
 
 async function loginHandler(email, password) {
   let user = await userService.getUserByUserName(email);
   if (!user) {
-    throw "Email or Password incorrect";
-  }
-  let userCreated = moment(user.updatedAt);
-  let curreTime = moment(Date.now());
-
-  const difference = curreTime.diff(userCreated, "minutes");
-  if (!user.emailVerified && parseInt(difference) > 15) {
-    throw "Check your confirmation email first";
+    throw "email or password incorrect";
   }
 
   if (!user.emailVerified) {
-    throw "Verify your email to proceed";
+    throw "verify your email to proceed";
   }
 
   const pass = bcryptjs.compareSync(password, user.password);
@@ -319,28 +246,22 @@ async function loginHandler(email, password) {
     throw "email or password incorrect";
   }
 
-  let updatedUser = _.omit(user.dataValues, ["password", "createdAt", "updatedAt"]);
+  // const token = jwt.sign({ sub: user.id }, CONSTANTS.JWTSECRET, { expiresIn: '24hr' });
+  let updatedUser = _.omit(user.dataValues, ["password"]);
+  // updatedUser.token = token;
   return updatedUser;
 }
 
-async function applicationUserHandler({ userId, application, role }) {
-  // console.log(userId, application, role);
-  if (userId && application && role) {
-    const applicationUser = await userService.addApplicationUser(userId, application, role);
-    if (!applicationUser) {
-      throw "something went wrong";
-    }
-    return applicationUser;
-  } else {
-    throw "missing field";
-  }
-}
-
 async function signUpHandler(user) {
-  user.username = user.username ? user.username : user.email;
-  const checkedUser = await checkUsernameUnique(user.username);
-  if (!checkedUser.isUnique) {
-    return { ...checkedUser, success: false };
+  if (!user.username) {
+    if (!(await isEmailUnique(user.email))) {
+      throw "Email is already in use";
+    }
+    user.username = user.email;
+  } else {
+    if (!(await isUsernameUnique(user.username))) {
+      throw "Username is already in use";
+    }
   }
 
   let createdUser = await userService.createUser(user);
@@ -351,11 +272,7 @@ async function signUpHandler(user) {
     throw "something went wrong";
   }
 
-  if (
-    user.APPLICATION == "TRABAHANAP" ||
-    user.APPLICATION == "MSP" ||
-    user.APPLICATION == "JOBDOR"
-  ) {
+  if (user.APPLICATION == "TRABAHANAP" || user.APPLICATION == "MSP") {
     const applicationUser = await userService.addApplicationUser(
       createdUser.id,
       user.APPLICATION,
@@ -369,7 +286,7 @@ async function signUpHandler(user) {
 
   let updatedUser = _.omit(createdUser.dataValues, ["password"]);
 
-  return { ...updatedUser, success: true, emailVerificationToken: token };
+  return { ...updatedUser, emailVerificationToken: token };
 }
 
 async function verifyTokenHandler(token) {
@@ -382,69 +299,17 @@ async function verifyTokenHandler(token) {
   return decoded;
 }
 
-async function resendEmailHandler(email) {
-  const user = await userService.getUserByEmail(email);
-
-  if (!user) {
-    throw "user does not exist";
-  }
-
-  const token = jwt.sign({ sub: user.id }, CONSTANTS.JWTEMAILSECRET);
-  let createToken = tokenService.createToken({ token });
-
-  if (!createToken) {
-    throw "something went wrong";
-  }
-  const updateUser = await userService.updateUser(user, {
-    updatedAt: sequelize.fn("NOW"),
-  });
-  user.dataValues["emailVerificationToken"] = token;
-
-  return user;
-}
-
-async function getUnverifiedUserByDateOnly(startDate, endDate) {
-  const users = await userService.getUnverifiedUserByDateOnly(startDate, endDate);
-
-  let user = users.map((items) => {
-    const token = jwt.sign({ sub: items.id }, CONSTANTS.JWTEMAILSECRET);
-    let createToken = tokenService.createToken({ token });
-    items["emailVerificationToken"] = token;
-    return items;
-  });
-
-  if (user) {
-    return user;
-  }
-}
-
-async function getUnverifiedUserByDate(startDate, endDate, offset, limit) {
-  const users = await userService.getUnverifiedUserByDate(
-    startDate,
-    endDate,
-    parseInt(offset) || 0,
-    parseInt(limit) || 8
-  );
-  if (users) {
-    const countUsers = await userService.countUnverifiedUser(startDate, endDate);
-    let total = Object.values(countUsers[0])[0];
-    return { users, total };
-  }
-}
 async function verifyEmailHandler(token) {
   let retriveToken = await tokenService.getToken(token);
+  // console.log("retrived token value", retriveToken);
 
   if (!retriveToken) {
     throw "invalid token";
   }
 
-  let tokenCreated = moment(retriveToken.createdAt);
-  let curreTime = moment(Date.now());
-  const difference = curreTime.diff(tokenCreated, "hours");
-  if (difference > 12) {
-    throw "invalid token";
-  }
   var decoded = jwt.verify(token, CONSTANTS.JWTEMAILSECRET);
+
+  // console.log("decoded token value", decoded);
 
   let userId = decoded.sub;
 
@@ -453,10 +318,13 @@ async function verifyEmailHandler(token) {
     throw "something went wrong";
   }
 
+  // console.log("retrived user value", user);
+
   let updatedUser = await userService.updateUser(user, { emailVerified: true });
   let updateApplicationUser = await userService.updateApplicationUser(userId);
+  let updatedToken = tokenService.updateToken(retriveToken, { expired: true });
 
-  if (!updatedUser || !updateApplicationUser) {
+  if (!updatedUser || !updatedToken || !updateApplicationUser) {
     throw "something went wrong";
   }
 
@@ -493,9 +361,13 @@ async function changePasswordHandler(userId, password) {
     throw "user does not exist";
   }
 
+  // if(!user.emailVerified){
+  //     throw "verify your email to proceed";
+  // }
+
   const updatedUser = await userService.updateUser(user, {
     password: bcryptjs.hashSync(password, 10),
-    emailVerified: true,
+    emailVerified: true
   });
 
   if (!updatedUser) {
@@ -506,51 +378,13 @@ async function changePasswordHandler(userId, password) {
 }
 
 async function getUserHandler(email) {
-  let user = await userService.getUserByEmail(email);
-
-  if (!user) {
-    throw "user does not exist";
-  }
-  const application = await userService.getApplicationUserByUserId(user.id);
-  let temp = user.dataValues;
-  return {
-    id: temp.id,
-    username: temp.username,
-    email: temp.email,
-    role: application.role,
-    firstName: temp.firstName,
-    lastName: temp.lastName,
-    applicationName: application.applicationApplicationId,
-  };
-}
-
-async function getByUsernameHandler(username) {
-  let user = await userService.getUserByUserName(username);
+  const user = await userService.getUserByEmail(email);
 
   if (!user) {
     throw "user does not exist";
   }
 
-  const application = await userService.getApplicationUserByUserId(user.id);
-  let company = {};
-  if (application.dataValues.company) {
-    let c = application.dataValues.company.dataValues;
-    company["companyName"] = c.companyName;
-    company["address"] = c.address;
-    company["industryType"] = c.industryType;
-  }
-  let temp = user.dataValues;
-  return {
-    id: temp.id,
-    username: temp.username,
-    email: temp.email,
-    role: application.role,
-    firstName: temp.firstName,
-    lastName: temp.lastName,
-    applicationName: application.applicationApplicationId,
-    phoneNumber: temp.phoneNumber,
-    ...company,
-  };
+  return user;
 }
 
 async function socialSignupHandler(user) {
@@ -595,7 +429,7 @@ async function socialLoginHandler({ email }) {
 }
 
 async function getUserByEmailHandler(email) {
-  const user = await userService.getUserByUserName(email);
+  const user = await userService.getUserByEmail(email);
   if (!user) {
     throw "user is not found";
   }
@@ -616,7 +450,7 @@ async function updatePasswordHandler(id, oldPassword, newPassword) {
   }
 
   const updatedUser = await userService.updateUser(user, {
-    password: bcryptjs.hashSync(newPassword, 10),
+    password: bcryptjs.hashSync(newPassword, 10)
   });
   if (!updatedUser) {
     throw "something went wrong";
@@ -633,34 +467,24 @@ async function isEmailUnique(email) {
   return true;
 }
 
-async function checkUsernameUnique(username) {
-  const user = await userService.getUserByUserName(username);
-  if (user) {
-    const application = await userService.getApplicationUserByUserId(user.id);
-    let temp = user.dataValues;
-    return {
-      isUnique: false,
-      id: temp.id,
-      username: temp.username,
-      email: temp.email,
-      role: application.role,
-      firstName: temp.firstName,
-      lastName: temp.lastName,
-      applicationName: application.applicationApplicationId,
-    };
+async function isUsernameUnique(username) {
+  const foundUsername = await userService.getUserByUsername(username);
+  if (foundUsername) {
+    return false;
   }
 
-  return { isUnique: true };
+  return true;
 }
 
 async function setPasswordHandler(email, password) {
+  // console.log(email, password);
   const user = await userService.getUserByEmail(email);
   if (!user) {
     throw "user is not found";
   }
 
   const updatedUser = await userService.updateUser(user, {
-    password: bcryptjs.hashSync(password, 10),
+    password: bcryptjs.hashSync(password, 10)
   });
   if (!updatedUser) {
     throw "something went wrong";
@@ -684,13 +508,13 @@ async function updateUserHandler(user) {
 }
 
 async function addCompanyProfileHandler(company) {
-  company.id = uuid4();
+  console.log(company);
+  // company.applicationApplicationId = company.ApplicationId;
   const appUser = await paymentService.getApplicationUserByUserIdAndApplication(
     company.user_id,
     company.applicationApplicationId
   );
-  // console.log(appUser, 'appuser')
-
+  
   if (!appUser) {
     throw "user is not found";
   }
@@ -709,12 +533,15 @@ async function addCompanyProfileHandler(company) {
   paymentInfo.currencyType = "peso";
   paymentInfo.createdAt = new Date();
   paymentInfo.updatedAt = new Date();
+  console.log(paymentInfo,'nfo')
   const addCompany = await paymentService.addCompany(company);
   const updatedUser = await paymentService.updateApplicationUser(appUser, {
     ...appUser.dataValues,
-    CompanyId: company.id,
+    CompanyId: company.id
   });
-  const paymentInfoAdd = await paymentService.addPaymentInformation(paymentInfo);
+  const paymentInfoAdd = await paymentService.addPaymentInformation(
+    paymentInfo
+  );
 
   if (!updatedUser || !addCompany || !paymentInfoAdd) {
     throw "something went wrong";
@@ -724,7 +551,7 @@ async function addCompanyProfileHandler(company) {
 }
 
 async function checkUsernameHandler(username) {
-  let user = await userService.getUserByUserName(username);
+  let user = await userService.getUserByUsername(username);
   if (user) {
     return false;
   }
@@ -740,18 +567,12 @@ module.exports = {
   changePasswordRequest,
   changePassword,
   getUser,
-  getUserByUsername,
-  resendEmail,
-  createApplicationUser,
   socialSignup,
   socialLogin,
   updatePassword,
   getUserByEmail,
   setPassword,
   updateUser,
-  addCompanyProfile,
-  checkUsername,
-  getUnverifiedUser,
-  getUnverifiedUserDate,
-  createNewApplicationUser,
+  addCmpanyProfile,
+  checkUsername
 };
