@@ -1,9 +1,9 @@
-const {
-  validatePaymentInformation,
-} = require("../_helpers/validators");
+const { validatePaymentInformation } = require("../_helpers/validators");
 const uuid4 = require("uuid/v4");
 const paymentService = require("../services/payment.service");
 var moment = require("moment");
+const depositService = require("../services/deposit.service");
+const transactionService = require("../services/transaction.service");
 
 function addPaymentInformation(req, res, next) {
   const payInfo = req.body;
@@ -14,10 +14,10 @@ function addPaymentInformation(req, res, next) {
   }
 
   addPaymentInformationHandler(payInfo)
-    .then(payment_information =>
+    .then((payment_information) =>
       res.status(200).json({ success: true, payment_information })
     )
-    .catch(err => next(err));
+    .catch((err) => next(err));
 }
 
 function getUserPaymentInformations(req, res, next) {
@@ -28,10 +28,10 @@ function getUserPaymentInformations(req, res, next) {
   }
 
   getUserPaymentInformationsHandler(userId)
-    .then(payment_informations =>
+    .then((payment_informations) =>
       res.status(200).json({ success: true, payment_informations })
     )
-    .catch(err => next(err));
+    .catch((err) => next(err));
 }
 
 function buyPlan(req, res, next) {
@@ -43,8 +43,10 @@ function buyPlan(req, res, next) {
   }
 
   buyPlanHandler(req.body)
-    .then(subscription => res.status(200).json({ success: true, subscription }))
-    .catch(err => next(err));
+    .then((subscription) =>
+      res.status(200).json({ success: true, subscription })
+    )
+    .catch((err) => next(err));
 }
 
 async function addPaymentInformationHandler(payInfo) {
@@ -67,7 +69,7 @@ async function addPaymentInformationHandler(payInfo) {
 
   // payInfo.id = uuid4();
   const updatedUser = await paymentService.updateAppUser(user, {
-    PaymentIdentifier: payInfo.ownerReference
+    PaymentIdentifier: payInfo.ownerReference,
   });
   const paymentInformation = await paymentService.addPaymentInformation(
     payInfo
@@ -99,9 +101,6 @@ async function getUserPaymentInformationsHandler(userId) {
   return paymentInfos;
 }
 
-
-
-
 async function checkCardUnique(creditCardNumber, ownerReference) {
   const foundCard = await paymentService.getUserPaymentInformation(
     creditCardNumber,
@@ -110,9 +109,60 @@ async function checkCardUnique(creditCardNumber, ownerReference) {
   return !!foundCard;
 }
 
+//deposit
+function deposit(req, res, next) {
+  depositHandler(req.body)
+    .then((deposit) =>
+      deposit
+        ? res.status(400).send({ success: false })
+        : res.status(200).json({ success: true, deposit })
+    )
+    .catch((err) => next(err));
+}
+
+async function depositHandler(body) {
+  const paymentInfo = await paymentService.getPaymentById(body.id);
+  if (paymentInfo) {
+    const deposit = await depositService.addDesposit({
+      deposit: body.amount,
+      companyId: paymentInfo.companyId,
+      userId: paymentInfo.userId,
+      paymentInfoId: paymentInfo.id,
+    });
+    if (deposit) {
+      return deposit;
+    }
+  }
+}
+
+function addTransactions(req, res, next) {
+  transactionsHandler(req.body)
+    .then((transactions) =>
+      transactions
+        ? res.status(400).send({ success: false })
+        : res.status(200).json({ success: true, deposit })
+    )
+    .catch((err) => next(err));
+}
+
+async function transactionsHandler(body) {
+  const paymentInfo = await paymentService.getPaymentById(body.id);
+  if (paymentInfo) {
+    const trans = await transactionService.addTransaction({
+      amount: body.amount,
+      companyId: paymentInfo.companyId,
+      paymentInfoId: paymentInfo.id,
+    });
+    if (trans) {
+      return trans;
+    }
+  }
+}
 
 module.exports = {
   addPaymentInformation,
   getUserPaymentInformations,
   buyPlan,
+  deposit,
+  addTransactions,
 };
