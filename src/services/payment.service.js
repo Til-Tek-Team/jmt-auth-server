@@ -4,6 +4,7 @@ const {
   PaymentInformation,
   Company,
   Application,
+  PaymentInfo,
 } = require("../models");
 
 function getApplicationUserByUserId(UserId) {
@@ -29,9 +30,7 @@ function getUserPaymentInformation(creditCardNumber, ownerReference) {
 }
 
 function getUserPaymentInformations(ownerReference) {
-  return PaymentInformation.findAll({
-    where: { ownerReference },
-  }).catch((err) => console.log(err));
+  return PaymentInformation.findAll({ where: { ownerReference } }).catch((err) => console.log(err));
 }
 
 function updateAppUser(user, data) {
@@ -52,6 +51,18 @@ function getPaymentById(id) {
   );
 }
 
+function createPaymentInfo(paymentInfo) {
+  return PaymentInfo.create(paymentInfo).catch((err) => console.log(err));
+}
+
+function getUserPaymentInfos(companyId) {
+  return PaymentInfo.findAll({ where: { companyId } }).catch((err) => console.log(err));
+}
+
+function getPaymentInfoById(id) {
+  return PaymentInfo.findOne({ where: { id } }).catch((err) => console.log(err));
+}
+
 module.exports = {
   getApplicationUserByUserId,
   addPaymentInformation,
@@ -61,5 +72,7 @@ module.exports = {
   getApplicationUserByUserIdAndApplication,
   updateApplicationUser,
   addCompany,
-  getPaymentById,
+  createPaymentInfo,
+  getUserPaymentInfos,
+  getPaymentInfoById,
 };
