@@ -20,7 +20,7 @@ function addPaymentInformation(req, res, next) {
 function createPaymentInfo(req, res, next) {
   const paymentInfo = req.body;
   let valid = validatePaymentInfo(paymentInfo);
-  console.log(valid);
+  // console.log(valid);
   if (!valid) {
     res.status(200).json({ success: false, error: "invalid request" });
     return;
