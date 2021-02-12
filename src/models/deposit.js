@@ -2,7 +2,7 @@
 
 module.exports = function (sequelize, DataTypes) {
   return sequelize.define(
-    "deposit",
+    "deposits",
     {
       id: {
         primaryKey: true,
@@ -54,7 +54,7 @@ module.exports = function (sequelize, DataTypes) {
       },
     },
     {
-      tableName: "deposit",
+      tableName: "deposits",
     }
   );
 };

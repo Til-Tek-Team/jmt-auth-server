@@ -1,4 +1,7 @@
-const { validatePaymentInformation, validatePaymentInfo } = require("../_helpers/validators");
+const {
+  validatePaymentInformation,
+  validatePaymentInfo,
+} = require("../_helpers/validators");
 const uuid4 = require("uuid/v4");
 const paymentService = require("../services/payment.service");
 const userService = require("../services/user.service");
@@ -15,7 +18,9 @@ function addPaymentInformation(req, res, next) {
   }
 
   addPaymentInformationHandler(payInfo)
-    .then((payment_information) => res.status(200).json({ success: true, payment_information }))
+    .then((payment_information) =>
+      res.status(200).json({ success: true, payment_information })
+    )
     .catch((err) => next(err));
 }
 
@@ -29,7 +34,9 @@ function createPaymentInfo(req, res, next) {
   }
 
   createPaymentInfoHandler(paymentInfo)
-    .then((payment_info) => res.status(200).json({ success: true, payment_info }))
+    .then((payment_info) =>
+      res.status(200).json({ success: true, payment_info })
+    )
     .catch((err) => next(err));
 }
 
@@ -41,7 +48,9 @@ function getUserPaymentInfos(req, res, next) {
     return;
   }
   getUserPaymentInfosHandler(username)
-    .then((payment_infos) => res.status(200).json({ success: true, payment_infos }))
+    .then((payment_infos) =>
+      res.status(200).json({ success: true, payment_infos })
+    )
     .catch((err) => next(err));
 }
 
@@ -54,7 +63,9 @@ function getPaymentInfo(req, res, next) {
   }
 
   getPaymentInfoHandler(paymentInfoId)
-    .then((payment_info) => res.status(200).json({ success: true, payment_info }))
+    .then((payment_info) =>
+      res.status(200).json({ success: true, payment_info })
+    )
     .catch((err) => next(err));
 }
 
@@ -88,7 +99,9 @@ function getUserPaymentInformations(req, res, next) {
   }
 
   getUserPaymentInformationsHandler(userId)
-    .then((payment_informations) => res.status(200).json({ success: true, payment_informations }))
+    .then((payment_informations) =>
+      res.status(200).json({ success: true, payment_informations })
+    )
     .catch((err) => next(err));
 }
 
@@ -101,7 +114,9 @@ function buyPlan(req, res, next) {
   }
 
   buyPlanHandler(req.body)
-    .then((subscription) => res.status(200).json({ success: true, subscription }))
+    .then((subscription) =>
+      res.status(200).json({ success: true, subscription })
+    )
     .catch((err) => next(err));
 }
 
@@ -132,7 +147,10 @@ async function addPaymentInformationHandler(payInfo) {
 
   payInfo.ownerReference = user.CompanyId ? user.CompanyId : user.UserId;
 
-  let foundCard = await checkCardUnique(payInfo.creditCardNumber, payInfo.ownerReference);
+  let foundCard = await checkCardUnique(
+    payInfo.creditCardNumber,
+    payInfo.ownerReference
+  );
 
   if (foundCard) {
     throw "Information already registered for this user";
@@ -142,7 +160,9 @@ async function addPaymentInformationHandler(payInfo) {
   const updatedUser = await paymentService.updateAppUser(user, {
     PaymentIdentifier: payInfo.ownerReference,
   });
-  const paymentInformation = await paymentService.addPaymentInformation(payInfo);
+  const paymentInformation = await paymentService.addPaymentInformation(
+    payInfo
+  );
   if (!paymentInformation || !updatedUser) {
     throw "something went wrong";
   }
@@ -160,7 +180,9 @@ async function getUserPaymentInformationsHandler(userId) {
     return [];
   }
 
-  const paymentInfos = await paymentService.getUserPaymentInformations(user.PaymentIdentifier);
+  const paymentInfos = await paymentService.getUserPaymentInformations(
+    user.PaymentIdentifier
+  );
   if (!paymentInfos) {
     throw "something went wrong";
   }
@@ -181,14 +203,14 @@ function deposit(req, res, next) {
   depositHandler(req.body)
     .then((deposit) =>
       deposit
-        ? res.status(400).send({ success: false })
-        : res.status(200).json({ success: true, deposit })
+        ? res.status(200).json({ success: true, deposit })
+        : res.status(400).send({ success: false })
     )
     .catch((err) => next(err));
 }
 
 async function depositHandler(body) {
-  const paymentInfo = await paymentService.getPaymentById(body.id);
+  const paymentInfo = await paymentService.getPaymentInfoById(body.id);
   if (paymentInfo) {
     const deposit = await depositService.addDesposit({
       deposit: body.amount,
@@ -226,6 +248,24 @@ async function transactionsHandler(body) {
   }
 }
 
+function balance(req, res, next) {
+  balanceHandler(req.params.companyId)
+    .then((balance) =>
+      balance
+        ? res.status(200).json({ success: true, balance })
+        : res.status(400).send({ success: false })
+    )
+    .catch((err) => next(err));
+}
+
+async function balanceHandler(companyId) {
+  const balnce= await paymentService.getCompanyBalance(companyId);
+  console.log('balnce', balnce)
+  if(balnce){
+    return balnce;
+  }
+}
+
 module.exports = {
   addPaymentInformation,
   getUserPaymentInformations,
@@ -235,4 +275,5 @@ module.exports = {
   createPaymentInfo,
   getUserPaymentInfos,
   getPaymentInfo,
+  balance,
 };

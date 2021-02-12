@@ -6,6 +6,7 @@ app.post("/payment_information", paymentController.addPaymentInformation);
 
 app.post("/deposit",paymentController.deposit)
 app.post("/transaction",paymentController.addTransactions)
+app.get("/balance/:companyId",paymentController.balance)
 
 
 app.post("/buy_plan", paymentController.buyPlan);

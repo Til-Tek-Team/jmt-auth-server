@@ -6,7 +6,7 @@ const {
   Application,
   PaymentInfo,
 } = require("../models");
-
+const { QueryTypes } = require("sequelize");
 function getApplicationUserByUserId(UserId) {
   return ApplicationUser.findOne({
     where: { UserId },
@@ -30,7 +30,9 @@ function getUserPaymentInformation(creditCardNumber, ownerReference) {
 }
 
 function getUserPaymentInformations(ownerReference) {
-  return PaymentInformation.findAll({ where: { ownerReference } }).catch((err) => console.log(err));
+  return PaymentInformation.findAll({
+    where: { ownerReference },
+  }).catch((err) => console.log(err));
 }
 
 function updateAppUser(user, data) {
@@ -56,11 +58,22 @@ function createPaymentInfo(paymentInfo) {
 }
 
 function getUserPaymentInfos(companyId) {
-  return PaymentInfo.findAll({ where: { companyId } }).catch((err) => console.log(err));
+  return PaymentInfo.findAll({ where: { companyId } }).catch((err) =>
+    console.log(err)
+  );
 }
 
 function getPaymentInfoById(id) {
-  return PaymentInfo.findOne({ where: { id } }).catch((err) => console.log(err));
+  return PaymentInfo.findOne({ where: { id } }).catch((err) =>
+    console.log(err)
+  );
+}
+
+function getCompanyBalance(companyId) {
+  return sequelize.query(
+    `SELECT balance FROM view_balance where companyId=${companyId}`,
+    { type: QueryTypes.SELECT }
+  );
 }
 
 module.exports = {
@@ -75,4 +88,5 @@ module.exports = {
   createPaymentInfo,
   getUserPaymentInfos,
   getPaymentInfoById,
+  getCompanyBalance,
 };
