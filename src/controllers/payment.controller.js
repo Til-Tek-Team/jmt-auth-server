@@ -259,7 +259,6 @@ function balance(req, res, next) {
 }
 
 async function balanceHandler(username) {
-  console.log('username', username)
   let user = await userService.getUserByUserName(username);
   if (!user) throw "invalid request";
 
@@ -267,7 +266,6 @@ async function balanceHandler(username) {
   if (!appUser) throw "invalid request";
 
   const balnce= await paymentService.getCompanyBalance(appUser.companyId);
-  console.log('balnce', balnce)
   if(balnce[0]){
     return balnce[0].balance;
   }
