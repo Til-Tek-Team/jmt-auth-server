@@ -71,7 +71,7 @@ function getPaymentInfoById(id) {
 
 function getCompanyBalance(companyId) {
   return sequelize.query(
-    `SELECT balance FROM view_balance where companyId=${companyId}`,
+    `SELECT balance FROM view_balance where companyId='${companyId}'`,
     { type: QueryTypes.SELECT }
   );
 }

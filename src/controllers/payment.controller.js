@@ -249,7 +249,7 @@ async function transactionsHandler(body) {
 }
 
 function balance(req, res, next) {
-  balanceHandler(req.params.companyId)
+  balanceHandler(req.params.username)
     .then((balance) =>
       balance
         ? res.status(200).json({ success: true, balance })
@@ -258,11 +258,18 @@ function balance(req, res, next) {
     .catch((err) => next(err));
 }
 
-async function balanceHandler(companyId) {
-  const balnce= await paymentService.getCompanyBalance(companyId);
+async function balanceHandler(username) {
+  console.log('username', username)
+  let user = await userService.getUserByUserName(username);
+  if (!user) throw "invalid request";
+
+  let appUser = await paymentService.getApplicationUserByUserId(user.id);
+  if (!appUser) throw "invalid request";
+
+  const balnce= await paymentService.getCompanyBalance(appUser.companyId);
   console.log('balnce', balnce)
-  if(balnce){
-    return balnce;
+  if(balnce[0]){
+    return balnce[0].balance;
   }
 }
 
