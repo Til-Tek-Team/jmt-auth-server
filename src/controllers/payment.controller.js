@@ -1,7 +1,4 @@
-const {
-  validatePaymentInformation,
-  validatePaymentInfo,
-} = require("../_helpers/validators");
+const { validatePaymentInformation, validatePaymentInfo } = require("../_helpers/validators");
 const uuid4 = require("uuid/v4");
 const paymentService = require("../services/payment.service");
 const userService = require("../services/user.service");
@@ -18,9 +15,7 @@ function addPaymentInformation(req, res, next) {
   }
 
   addPaymentInformationHandler(payInfo)
-    .then((payment_information) =>
-      res.status(200).json({ success: true, payment_information })
-    )
+    .then((payment_information) => res.status(200).json({ success: true, payment_information }))
     .catch((err) => next(err));
 }
 
@@ -34,9 +29,7 @@ function createPaymentInfo(req, res, next) {
   }
 
   createPaymentInfoHandler(paymentInfo)
-    .then((payment_info) =>
-      res.status(200).json({ success: true, payment_info })
-    )
+    .then((payment_info) => res.status(200).json({ success: true, payment_info }))
     .catch((err) => next(err));
 }
 
@@ -48,9 +41,7 @@ function getUserPaymentInfos(req, res, next) {
     return;
   }
   getUserPaymentInfosHandler(username)
-    .then((payment_infos) =>
-      res.status(200).json({ success: true, payment_infos })
-    )
+    .then((payment_infos) => res.status(200).json({ success: true, payment_infos }))
     .catch((err) => next(err));
 }
 
@@ -63,9 +54,7 @@ function getPaymentInfo(req, res, next) {
   }
 
   getPaymentInfoHandler(paymentInfoId)
-    .then((payment_info) =>
-      res.status(200).json({ success: true, payment_info })
-    )
+    .then((payment_info) => res.status(200).json({ success: true, payment_info }))
     .catch((err) => next(err));
 }
 
@@ -99,9 +88,7 @@ function getUserPaymentInformations(req, res, next) {
   }
 
   getUserPaymentInformationsHandler(userId)
-    .then((payment_informations) =>
-      res.status(200).json({ success: true, payment_informations })
-    )
+    .then((payment_informations) => res.status(200).json({ success: true, payment_informations }))
     .catch((err) => next(err));
 }
 
@@ -114,9 +101,7 @@ function buyPlan(req, res, next) {
   }
 
   buyPlanHandler(req.body)
-    .then((subscription) =>
-      res.status(200).json({ success: true, subscription })
-    )
+    .then((subscription) => res.status(200).json({ success: true, subscription }))
     .catch((err) => next(err));
 }
 
@@ -147,10 +132,7 @@ async function addPaymentInformationHandler(payInfo) {
 
   payInfo.ownerReference = user.CompanyId ? user.CompanyId : user.UserId;
 
-  let foundCard = await checkCardUnique(
-    payInfo.creditCardNumber,
-    payInfo.ownerReference
-  );
+  let foundCard = await checkCardUnique(payInfo.creditCardNumber, payInfo.ownerReference);
 
   if (foundCard) {
     throw "Information already registered for this user";
@@ -160,9 +142,7 @@ async function addPaymentInformationHandler(payInfo) {
   const updatedUser = await paymentService.updateAppUser(user, {
     PaymentIdentifier: payInfo.ownerReference,
   });
-  const paymentInformation = await paymentService.addPaymentInformation(
-    payInfo
-  );
+  const paymentInformation = await paymentService.addPaymentInformation(payInfo);
   if (!paymentInformation || !updatedUser) {
     throw "something went wrong";
   }
@@ -180,9 +160,7 @@ async function getUserPaymentInformationsHandler(userId) {
     return [];
   }
 
-  const paymentInfos = await paymentService.getUserPaymentInformations(
-    user.PaymentIdentifier
-  );
+  const paymentInfos = await paymentService.getUserPaymentInformations(user.PaymentIdentifier);
   if (!paymentInfos) {
     throw "something went wrong";
   }
@@ -234,6 +212,41 @@ function addTransactions(req, res, next) {
     .catch((err) => next(err));
 }
 
+function buyVideoTransaction(req, res, next) {
+  const { username, amount } = req.body;
+
+  if (!username || !amount) {
+    res.status(200).json({ success: false, error: "invalid request" });
+    return;
+  }
+  buyVideoTransactionHandler(req.body)
+    .then((transaction) =>
+      transaction
+        ? res.status(200).json({ success: true, transaction })
+        : res.status(400).send({ success: false })
+    )
+    .catch((err) => {
+      console.log(err);
+      next(err);
+    });
+}
+
+async function buyVideoTransactionHandler(body) {
+  let user = await userService.getUserByUserName(body.username);
+  if (!user) throw "invalid request";
+
+  let appUser = await paymentService.getApplicationUserByUserId(user.id);
+  if (!appUser) throw "server error";
+
+  const trans = await transactionService.addTransaction({
+    amount: -body.amount,
+    companyId: appUser.CompanyId,
+  });
+
+  if (!trans) throw "invalid request";
+  return trans;
+}
+
 async function transactionsHandler(body) {
   const paymentInfo = await paymentService.getPaymentById(body.id);
   if (paymentInfo) {
@@ -265,10 +278,11 @@ async function balanceHandler(username) {
   let appUser = await paymentService.getApplicationUserByUserId(user.id);
   if (!appUser) throw "invalid request";
 
-  const balnce= await paymentService.getCompanyBalance(appUser.companyId);
-  if(balnce[0]){
+  const balnce = await paymentService.getCompanyBalance(appUser.companyId);
+  if (balnce[0]) {
     return balnce[0].balance;
   }
+  return "NO_BALANCE";
 }
 
 module.exports = {
@@ -281,4 +295,5 @@ module.exports = {
   getUserPaymentInfos,
   getPaymentInfo,
   balance,
+  buyVideoTransaction,
 };
