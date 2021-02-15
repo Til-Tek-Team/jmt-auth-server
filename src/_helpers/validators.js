@@ -108,7 +108,6 @@ function validatePaymentInfo(data) {
     "state",
     "zipCode",
     "cardNumber",
-    "securityCode",
     "cvc",
     "expDate",
     "cardType",
