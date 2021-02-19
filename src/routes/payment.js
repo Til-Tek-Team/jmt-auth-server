@@ -2,7 +2,7 @@ const app = (module.exports = require("express")());
 
 const paymentController = require("../controllers/payment.controller");
 
-app.post("/payment_information", paymentController.addPaymentInformation);
+// app.post("/payment_information", paymentController.addPaymentInformation);
 
 app.post("/deposit", paymentController.deposit);
 app.post("/transaction", paymentController.addTransactions);

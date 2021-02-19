@@ -6,18 +6,18 @@ var moment = require("moment");
 const depositService = require("../services/deposit.service");
 const transactionService = require("../services/transaction.service");
 
-function addPaymentInformation(req, res, next) {
-  const payInfo = req.body;
-  let valid = validatePaymentInformation(payInfo);
-  if (!valid) {
-    res.status(200).json({ success: false, error: "invalid request" });
-    return;
-  }
+// function addPaymentInformation(req, res, next) {
+//   const payInfo = req.body;
+//   let valid = validatePaymentInformation(payInfo);
+//   if (!valid) {
+//     res.status(200).json({ success: false, error: "invalid request" });
+//     return;
+//   }
 
-  addPaymentInformationHandler(payInfo)
-    .then((payment_information) => res.status(200).json({ success: true, payment_information }))
-    .catch((err) => next(err));
-}
+//   addPaymentInformationHandler(payInfo)
+//     .then((payment_information) => res.status(200).json({ success: true, payment_information }))
+//     .catch((err) => next(err));
+// }
 
 function createPaymentInfo(req, res, next) {
   const paymentInfo = req.body;
@@ -123,32 +123,32 @@ async function createPaymentInfoHandler(paymentInfo) {
   return dbPaymentInfo;
 }
 
-async function addPaymentInformationHandler(payInfo) {
-  const user = await paymentService.getApplicationUserByUserId(payInfo.userId);
+// async function addPaymentInformationHandler(payInfo) {
+//   const user = await paymentService.getApplicationUserByUserId(payInfo.userId);
 
-  if (!user) {
-    throw "invalid request";
-  }
+//   if (!user) {
+//     throw "invalid request";
+//   }
 
-  payInfo.ownerReference = user.CompanyId ? user.CompanyId : user.UserId;
+//   payInfo.ownerReference = user.CompanyId ? user.CompanyId : user.UserId;
 
-  let foundCard = await checkCardUnique(payInfo.creditCardNumber, payInfo.ownerReference);
+//   let foundCard = await checkCardUnique(payInfo.creditCardNumber, payInfo.ownerReference);
 
-  if (foundCard) {
-    throw "Information already registered for this user";
-  }
+//   if (foundCard) {
+//     throw "Information already registered for this user";
+//   }
 
-  // payInfo.id = uuid4();
-  const updatedUser = await paymentService.updateAppUser(user, {
-    PaymentIdentifier: payInfo.ownerReference,
-  });
-  const paymentInformation = await paymentService.addPaymentInformation(payInfo);
-  if (!paymentInformation || !updatedUser) {
-    throw "something went wrong";
-  }
+//   // payInfo.id = uuid4();
+//   const updatedUser = await paymentService.updateAppUser(user, {
+//     PaymentIdentifier: payInfo.ownerReference,
+//   });
+//   const paymentInformation = await paymentService.addPaymentInformation(payInfo);
+//   if (!paymentInformation || !updatedUser) {
+//     throw "something went wrong";
+//   }
 
-  return paymentInformation;
-}
+//   return paymentInformation;
+// }
 
 async function getUserPaymentInformationsHandler(userId) {
   const user = await paymentService.getApplicationUserByUserId(userId);
@@ -286,7 +286,7 @@ async function balanceHandler(username) {
 }
 
 module.exports = {
-  addPaymentInformation,
+  // addPaymentInformation,
   getUserPaymentInformations,
   buyPlan,
   deposit,

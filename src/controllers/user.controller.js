@@ -198,6 +198,12 @@ function checkUsername(req, res, next) {
     .catch((err) => next(err));
 }
 
+function deleteUserByUserName(req, res, next) {
+  deleteUserByUserNameHandler(req.params.username)
+    .then((success) => res.status(200).json({ success, username: req.params.username }))
+    .catch((err) => next(err));
+}
+
 async function loginHandler(email, password) {
   let user = await userService.getUserByUserName(email);
   if (!user) {
@@ -540,6 +546,16 @@ async function checkUsernameHandler(username) {
   return true;
 }
 
+async function deleteUserByUserNameHandler(username) {
+  let user = await userService.getUserByUserName(username);
+  if (!user) return false;
+
+  let deleted = await userService.updateUserToDeleted(user);
+  if (deleted) return true;
+
+  return false;
+}
+
 module.exports = {
   login,
   signUp,
@@ -556,4 +572,5 @@ module.exports = {
   updateUser,
   addCmpanyProfile,
   checkUsername,
+  deleteUserByUserName,
 };

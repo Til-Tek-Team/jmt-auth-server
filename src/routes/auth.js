@@ -29,3 +29,5 @@ app.post("/update_user", userController.updateUser);
 app.post("/companies", userController.addCmpanyProfile);
 
 app.post("/check_username", userController.checkUsername);
+
+app.delete("/user/:username", userController.deleteUserByUserName);
