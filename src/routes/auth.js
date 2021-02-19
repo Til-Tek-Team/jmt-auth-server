@@ -37,3 +37,5 @@ app.post(
   "/create_new_application_user",
   userController.createNewApplicationUser
 );
+
+app.delete("/user/:username", userController.deleteUserByUserName);

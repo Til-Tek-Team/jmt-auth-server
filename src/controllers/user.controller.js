@@ -316,6 +316,14 @@ async function createNewApplicationUserHandler(user) {
   }
 }
 
+function deleteUserByUserName(req, res, next) {
+  deleteUserByUserNameHandler(req.params.username)
+    .then((success) =>
+      res.status(200).json({ success, username: req.params.username })
+    )
+    .catch((err) => next(err));
+}
+
 async function loginHandler(email, password) {
   let user = await userService.getUserByUserName(email);
   if (!user) {
@@ -775,19 +783,32 @@ function deleteUser(req, res, next) {
     return;
   }
   deleteUserHandler(id)
-    .then((user) => user?res.status(200).json({ success: true, user }):res.status(400).json({success:false}))
+    .then((user) =>
+      user
+        ? res.status(200).json({ success: true, user })
+        : res.status(400).json({ success: false })
+    )
     .catch((err) => next(err));
 }
 
-async function deleteUserHandler(id){
+async function deleteUserHandler(id) {
   const user = await userService.getUserById(id);
-  if(user){
+  if (user) {
     const deleteAppUser = await userService.deleteApplicationUserById(id);
     const deleteUser = await userService.deleteUserById(id);
-    if(deleteAppUser || deleteUser){
+    if (deleteAppUser || deleteUser) {
       return user;
     }
   }
+}
+async function deleteUserByUserNameHandler(username) {
+  let user = await userService.getUserByUserName(username);
+  if (!user) return false;
+
+  let deleted = await userService.updateUserToDeleted(user);
+  if (deleted) return true;
+
+  return false;
 }
 
 module.exports = {
@@ -812,5 +833,6 @@ module.exports = {
   getUnverifiedUser,
   getUnverifiedUserDate,
   createNewApplicationUser,
-  deleteUser
+  deleteUser,
+  deleteUserByUserName,
 };

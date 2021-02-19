@@ -1,3 +1,4 @@
+const uuid4 = require("uuid/v4");
 const { User, ApplicationUser, Company } = require("../models");
 
 function createUser(user) {
@@ -11,6 +12,11 @@ function getUserByEmail(email) {
 
 function getUserByUserName(username) {
   return User.findOne({ where: { username } }).catch((err) => console.log(err));
+}
+
+function updateUserToDeleted(user) {
+  let uuid = uuid4();
+  return user.update({ deleted: 1, username: user.username + uuid, email: user.email + uuid });
 }
 
 function getUserById(id) {
@@ -100,7 +106,9 @@ function deleteApplicationUserById(id){
   );
 }
 
-
+function addCompany(company) {
+  return Company.create(company).catch((err) => console.log(err));
+}
 
 module.exports = {
   createUser,
@@ -116,5 +124,7 @@ module.exports = {
   getUnverifiedUserByDateOnly,
   countUnverifiedUser,
   deleteApplicationUserById,
-  deleteUserById
+  deleteUserById,
+  addCompany,
+  updateUserToDeleted,
 };
