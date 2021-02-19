@@ -1,6 +1,7 @@
 const { User, ApplicationUser, Company } = require("../models");
 
 function createUser(user) {
+  // console.log(user, "user created-------------------");
   return User.create(user).catch((err) => console.log(err));
 }
 
@@ -16,32 +17,90 @@ function getUserById(id) {
   return User.findOne({ where: { id } }).catch((err) => console.log(err));
 }
 
-function updateUser(user, data) {
-  return user.update(data);
+function getApplicationUserById(id) {
+  return ApplicationUser.findOne({ where: { id } }).catch((err) =>
+    console.log(err)
+  );
+}
+function getApplicationUserByUserId(id) {
+  return ApplicationUser.findOne({
+    where: { userId: id },
+    include: { model: Company },
+  }).catch((err) => console.log(err));
 }
 
-function addApplicationUser(UserId, applicationApplicationId, role, CompanyId = null) {
+function updateUser(user, data) {
+  user.changed("updatedAt", true);
+  return user.update(data).catch((err) => console.log(err));
+}
+
+function addApplicationUser(
+  UserId,
+  applicationApplicationId,
+  role,
+  verified = "0",
+  CompanyId
+) {
+  // console.log(UserId, applicationApplicationId, role);
   return ApplicationUser.create({
     UserId,
     applicationApplicationId,
     role,
-    CompanyId,
+    verified,
+    CompanyId
   }).catch((err) => console.log(err));
 }
 
 function updateApplicationUser(UserId) {
   return sequelize
-    .query(`UPDATE application_users SET verified = true WHERE UserId = '${UserId}'`)
+    .query(
+      `UPDATE application_users SET verified = true WHERE UserId = '${UserId}'`
+    )
     .catch((err) => console.log(err));
 }
 
-function getUserByUsername(username) {
-  return User.findOne({ where: { username } }).catch((err) => console.log(err));
+function getUnverifiedUserByDate(startDate, endDate, offset, limit) {
+  console.log(startDate, endDate, offset, limit, "sdfsd");
+  return sequelize
+    .query(
+      `SELECT u.* FROM users u left join application_users au on u.id = au.UserId WHERE u.emailVerified=0 and u.socialId <=> NULL and (u.createdAt between '${startDate}' and '${endDate}') and applicationApplicationId='TRABAHANAP' order by u.createdAt DESC limit ${offset} ,${limit}`,
+      { type: sequelize.QueryTypes.SELECT }
+    )
+    .catch((err) => console.log(err));
 }
 
-function addCompany(company) {
-  return Company.create(company).catch((err) => console.log(err));
+function countUnverifiedUser(startDate, endDate) {
+  return sequelize
+    .query(
+      `SELECT count(*) FROM users u left join application_users au on u.id = au.UserId WHERE u.emailVerified=0 and u.socialId <=> NULL and (u.createdAt between '${startDate}' and '${endDate}') and applicationApplicationId='TRABAHANAP'`,
+      { type: sequelize.QueryTypes.SELECT }
+    )
+    .catch((err) => console.log(err));
 }
+
+function getUnverifiedUserByDateOnly(startDate, endDate) {
+  // console.log(startDate,endDate,offset,limit,'sdfsd')
+  return sequelize
+    .query(
+      `SELECT u.* FROM users u left join application_users au on u.id = au.UserId WHERE u.emailVerified=0 and u.socialId <=> NULL and (u.createdAt between '${startDate}' and '${endDate}') and applicationApplicationId='TRABAHANAP'`,
+      { type: sequelize.QueryTypes.SELECT }
+    )
+    .catch((err) => console.log(err));
+}
+
+function deleteUserById(id){
+  return User.destroy({ where: { id } }).catch(err =>
+    console.log(err)
+  );
+}
+
+function deleteApplicationUserById(id){
+  return ApplicationUser.destroy({ where: { UserId:id } }).catch(err =>
+    console.log(err)
+  );
+}
+
+
 
 module.exports = {
   createUser,
@@ -50,7 +109,12 @@ module.exports = {
   updateUser,
   addApplicationUser,
   updateApplicationUser,
-  getUserByUsername,
+  getApplicationUserById,
+  getApplicationUserByUserId,
   getUserByUserName,
-  addCompany,
+  getUnverifiedUserByDate,
+  getUnverifiedUserByDateOnly,
+  countUnverifiedUser,
+  deleteApplicationUserById,
+  deleteUserById
 };
