@@ -248,7 +248,7 @@ async function buyVideoTransactionHandler(body) {
 }
 
 async function transactionsHandler(body) {
-  const paymentInfo = await paymentService.getPaymentById(body.id);
+  const paymentInfo = await paymentService.getPaymentInfoById(body.id);
   if (paymentInfo) {
     const trans = await transactionService.addTransaction({
       amount: body.amount,
