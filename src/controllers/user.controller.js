@@ -95,8 +95,8 @@ function getUnverifiedUserDate(req, res, next) {
       user
         ? res.status(200).json({ success: true, user })
         : res
-            .status(200)
-            .json({ success: false, error: "Somethin went wrong " })
+          .status(200)
+          .json({ success: false, error: "Somethin went wrong " })
     )
     .catch((err) => next("Internal Server Error! Try again"));
 }
@@ -386,11 +386,11 @@ async function signUpHandler(user) {
   if (!createdUser || !createToken) {
     throw "something went wrong";
   }
-
+  console.log('user', user)
   if (
     user.APPLICATION == "TRABAHANAP" ||
     user.APPLICATION == "MSP" ||
-    user.APPLICATION == "JOBDOR"
+    user.APPLICATION == "JOBDOR" || user.APPLICATION == "TALGUU"
   ) {
     const applicationUser = await userService.addApplicationUser(
       createdUser.id,
