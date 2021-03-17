@@ -2,8 +2,10 @@ const uuid4 = require("uuid/v4");
 const { User, ApplicationUser, Company } = require("../models");
 
 function createUser(user) {
-  // console.log(user, "user created-------------------");
   return User.create(user).catch((err) => console.log(err));
+}
+function createUserTr(user, transaction) {
+  return User.create(user, { transaction })
 }
 
 function getUserByEmail(email) {
@@ -56,6 +58,9 @@ function addApplicationUser(
     CompanyId
   }).catch((err) => console.log(err));
 }
+function addApplicationUserTr(body, transaction) {
+  return ApplicationUser.create(body, { transaction })
+}
 
 function updateApplicationUser(UserId) {
   return sequelize
@@ -94,14 +99,14 @@ function getUnverifiedUserByDateOnly(startDate, endDate) {
     .catch((err) => console.log(err));
 }
 
-function deleteUserById(id){
+function deleteUserById(id) {
   return User.destroy({ where: { id } }).catch(err =>
     console.log(err)
   );
 }
 
-function deleteApplicationUserById(id){
-  return ApplicationUser.destroy({ where: { UserId:id } }).catch(err =>
+function deleteApplicationUserById(id) {
+  return ApplicationUser.destroy({ where: { UserId: id } }).catch(err =>
     console.log(err)
   );
 }
@@ -112,6 +117,8 @@ function addCompany(company) {
 
 module.exports = {
   createUser,
+  createUserTr,
+  addApplicationUserTr,
   getUserByEmail,
   getUserById,
   updateUser,

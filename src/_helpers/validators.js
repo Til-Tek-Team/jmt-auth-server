@@ -58,46 +58,6 @@ function validatePlanType(planType) {
   return valid;
 }
 
-function validatePaymentInformation(data) {
-  let valid = true;
-  const fields = [
-    "userId",
-    "firstName",
-    "lastName",
-    "creditCardNumber",
-    "securityCode",
-    "cvc",
-    "currencyType",
-  ];
-  const keys = _.keys(data);
-  fields.map((field) => {
-    if (keys.includes(field)) {
-      return;
-    }
-    valid = false;
-  });
-  if (!valid) {
-    return valid;
-  }
-  _.map(data, (value, key) => {
-    if (key == "cvc") {
-      if (!validator.isNumeric(value + "") || (value + "").length > 4 || (value + "").length < 3) {
-        valid = false;
-      }
-    } else if (key == "creditCardNumber") {
-      if (!validator.isCreditCard(value + "")) {
-        valid = false;
-      }
-    } else {
-      if (validator.isEmpty(value + "")) {
-        valid = false;
-      }
-    }
-  });
-
-  return valid;
-}
-
 function validatePaymentInfo(data) {
   let valid = true;
   const fields = [
@@ -139,7 +99,6 @@ function validatePaymentInfo(data) {
 
 module.exports = {
   validateUser,
-  validatePaymentInformation,
   validatePlanType,
   validatePaymentInfo,
 };

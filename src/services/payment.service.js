@@ -1,7 +1,6 @@
 const {
   ApplicationUser,
   User,
-  PaymentInformation,
   Company,
   Application,
   PaymentInfo,
@@ -19,22 +18,6 @@ function getApplicationUserByUserIdAndApplication(UserId, ApplicationId) {
   }).catch((err) => console.log(err));
 }
 
-function addPaymentInformation(payInfo) {
-  return PaymentInformation.create(payInfo).catch((err) => console.log(err));
-}
-
-function getUserPaymentInformation(creditCardNumber, ownerReference) {
-  return PaymentInformation.findOne({
-    where: { creditCardNumber, ownerReference },
-  }).catch((err) => console.log(err));
-}
-
-function getUserPaymentInformations(ownerReference) {
-  return PaymentInformation.findAll({
-    where: { ownerReference },
-  }).catch((err) => console.log(err));
-}
-
 function updateAppUser(user, data) {
   return user.update(data).catch((err) => console.log(err));
 }
@@ -42,17 +25,15 @@ function updateAppUser(user, data) {
 function updateApplicationUser(appUser, data) {
   return appUser.update(data).catch((err) => console.log(err));
 }
-
+function updateApplicationUserTr(appUser, data, transaction) {
+  return appUser.update(data, { transaction })
+}
 function addCompany(company) {
   return Company.create(company).catch((err) => console.log(err));
 }
-
-function getPaymentById(id) {
-  return PaymentInformation.findOne({ where: { id } }).catch((err) =>
-    console.log(err)
-  );
+function addCompanyTr(company, transaction) {
+  return Company.create(company, { transaction })
 }
-
 function createPaymentInfo(paymentInfo) {
   return PaymentInfo.create(paymentInfo).catch((err) => console.log(err));
 }
@@ -78,13 +59,12 @@ function getCompanyBalance(companyId) {
 
 module.exports = {
   getApplicationUserByUserId,
-  addPaymentInformation,
-  getUserPaymentInformation,
-  getUserPaymentInformations,
   updateAppUser,
   getApplicationUserByUserIdAndApplication,
   updateApplicationUser,
   addCompany,
+  addCompanyTr,
+  updateApplicationUserTr,
   createPaymentInfo,
   getUserPaymentInfos,
   getPaymentInfoById,

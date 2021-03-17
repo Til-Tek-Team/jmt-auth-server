@@ -8,7 +8,7 @@ const { validateUser } = require("../_helpers/validators");
 const _ = require("lodash");
 const uuid4 = require("uuid/v4");
 var moment = require("moment");
-var sequelize = require("sequelize");
+var Sequelize = require("sequelize");
 
 function login(req, res, next) {
   const { email, password } = req.body;
@@ -280,13 +280,6 @@ function checkUsername(req, res, next) {
     .catch((err) => next(err));
 }
 
-function getUtcTime() {
-  let d = new Date();
-  let utcTime = d.getTime() + d.getTimezoneOffset() * 60000;
-  let utcDate = moment(new Date(utcTime)).format("YYYY-MM-DD HH:mm:ss");
-  return utcDate;
-}
-
 function createNewApplicationUser(req, res, next) {
   let { username, application, role, verified } = req.body;
   if (!(username && application && role && verified)) {
@@ -378,34 +371,28 @@ async function signUpHandler(user) {
   if (!checkedUser.isUnique) {
     return { ...checkedUser, success: false };
   }
-
-  let createdUser = await userService.createUser(user);
-  const token = jwt.sign({ sub: createdUser.id }, CONSTANTS.JWTEMAILSECRET);
-  let createToken = await tokenService.createToken({ token });
-
-  if (!createdUser || !createToken) {
-    throw "something went wrong";
-  }
-  console.log('user', user)
   if (
-    user.APPLICATION == "TRABAHANAP" ||
-    user.APPLICATION == "MSP" ||
-    user.APPLICATION == "JOBDOR" || user.APPLICATION == "TALGUU"
+    !["MPS", "TALGUU", 'JOBDOR'].includes(user.APPLICATION)
   ) {
-    const applicationUser = await userService.addApplicationUser(
-      createdUser.id,
-      user.APPLICATION,
-      user.role
-    );
-
-    if (!applicationUser) {
-      throw "something went wrong";
-    }
+    throw "Invalid application name"
   }
-
-  let updatedUser = _.omit(createdUser.dataValues, ["password"]);
-
-  return { ...updatedUser, success: true, emailVerificationToken: token };
+  const t = await sequelize.transaction();
+  try {
+    let createdUser = await userService.createUserTr(user, t);
+    const token = jwt.sign({ sub: createdUser.id }, CONSTANTS.JWTEMAILSECRET);
+    await tokenService.createTokenTr({ token }, t);
+    await userService.addApplicationUserTr({
+      UserId: createdUser.id,
+      applicationApplicationId: user.APPLICATION,
+      role: user.role
+    }, t);
+    let updatedUser = _.omit(createdUser.dataValues, ["password"]);
+    await t.commit();
+    return { ...updatedUser, success: true, emailVerificationToken: token };
+  } catch (err) {
+    await t.rollback();
+    throw err;
+  }
 }
 
 async function verifyTokenHandler(token) {
@@ -432,7 +419,7 @@ async function resendEmailHandler(email) {
     throw "something went wrong";
   }
   const updateUser = await userService.updateUser(user, {
-    updatedAt: sequelize.fn("NOW"),
+    updatedAt: Sequelize.fn("NOW"),
   });
   user.dataValues["emailVerificationToken"] = token;
 
@@ -601,27 +588,25 @@ async function socialSignupHandler(user) {
   }
   user.username = user.email;
   user.password = uuid4();
+  const t = await sequelize.transaction();
+  try {
+    const createdUser = await userService.createUserTr({ ...user }, t);
+    const applicationUser = await userService.addApplicationUserTr({
+      UserId: createdUser.id,
+      applicationApplicationId: user.APPLICATION,
+      role: user.role
+    }, t);
 
-  const createdUser = await userService.createUser({ ...user });
-  if (!createdUser) {
-    return "something went wrong";
+    let updatedUser = _.omit(createdUser.dataValues, ["password"]);
+
+    await t.commit();
+    return updatedUser;
+
+  } catch (err) {
+    await t.rollback();
+    throw err;
   }
 
-  if (user.APPLICATION == "TRABAHANAP") {
-    const applicationUser = await userService.addApplicationUser(
-      createdUser.id,
-      "TRABAHANAP",
-      user.role
-    );
-
-    if (!applicationUser) {
-      throw "something went wrong";
-    }
-  }
-
-  let updatedUser = _.omit(createdUser.dataValues, ["password"]);
-
-  return updatedUser;
 }
 
 async function socialLoginHandler({ email }) {
@@ -731,40 +716,24 @@ async function addCompanyProfileHandler(company) {
     company.user_id,
     company.applicationApplicationId
   );
-  // console.log(appUser, 'appuser')
 
   if (!appUser) {
     throw "user is not found";
   }
-
-  company.createdAt = new Date();
-  company.updatedAt = new Date();
-
-  const paymentInfo = {};
-  paymentInfo.firstName = company.companyName;
-  paymentInfo.lastName = company.companyName;
-  paymentInfo.id = company.id;
-  paymentInfo.ownerReference = company.id;
-  paymentInfo.creditCardNumber = "5500000000000004";
-  paymentInfo.securityCode = 1234;
-  paymentInfo.cvc = 1234;
-  paymentInfo.currencyType = "peso";
-  paymentInfo.createdAt = new Date();
-  paymentInfo.updatedAt = new Date();
-  const addCompany = await paymentService.addCompany(company);
-  const updatedUser = await paymentService.updateApplicationUser(appUser, {
-    ...appUser.dataValues,
-    CompanyId: company.id,
-  });
-  const paymentInfoAdd = await paymentService.addPaymentInformation(
-    paymentInfo
-  );
-
-  if (!updatedUser || !addCompany || !paymentInfoAdd) {
-    throw "something went wrong";
+  const t = await sequelize.transaction();
+  try {
+    const addCompany = await paymentService.addCompanyTr(company, t);
+    const updatedUser = await paymentService.updateApplicationUserTr(appUser, {
+      ...appUser.dataValues,
+      CompanyId: company.id,
+    }, t);
+    await t.commit();
+    return addCompany;
+  } catch (err) {
+    await t.rollback();
+    throw err;
   }
 
-  return addCompany;
 }
 
 async function checkUsernameHandler(username) {

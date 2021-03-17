@@ -4,7 +4,6 @@ const User = sequelize.import("./users.js");
 const Token = sequelize.import("./token.js");
 const Application = sequelize.import("./application.js");
 const ApplicationUser = sequelize.import("./applicationUser.js");
-const PaymentInformation = sequelize.import("./paymentInformation.js");
 const Company = sequelize.import("./company.js");
 const Deposit = sequelize.import("./deposit.js");
 const Transaction = sequelize.import("./transaction.js");
@@ -22,7 +21,6 @@ module.exports = {
   Token,
   Application,
   ApplicationUser,
-  PaymentInformation,
   Company,
   Transaction,
   Deposit,
