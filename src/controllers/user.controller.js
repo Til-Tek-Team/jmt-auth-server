@@ -371,8 +371,9 @@ async function signUpHandler(user) {
   if (!checkedUser.isUnique) {
     return { ...checkedUser, success: false };
   }
+  console.log(user)
   if (
-    !["MPS", "TALGUU", 'JOBDOR'].includes(user.APPLICATION)
+    !["MSP", "TALGUU", 'JOBDOR'].includes(user.APPLICATION)
   ) {
     throw "Invalid application name"
   }
