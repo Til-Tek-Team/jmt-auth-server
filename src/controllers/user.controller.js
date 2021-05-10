@@ -211,13 +211,12 @@ function socialLogin(req, res, next) {
 }
 
 function updatePassword(req, res, next) {
-  let { id, oldPassword, newPassword } = req.body;
-
-  if (!id || !oldPassword || !newPassword) {
+  let { id, oldPassword, newPassword, username } = req.body;
+  if (!oldPassword || !newPassword) {
     return res.status(200).json({ success: false, error: "invalid request" });
   }
 
-  updatePasswordHandler(id, oldPassword, newPassword)
+  updatePasswordHandler(id, oldPassword, newPassword, username)
     .then((success) => res.status(200).json({ success }))
     .catch((err) => next(err));
 }
@@ -631,14 +630,17 @@ async function getUserByEmailHandler(email) {
   return user;
 }
 
-async function updatePasswordHandler(id, oldPassword, newPassword) {
-  const user = await userService.getUserById(id);
+async function updatePasswordHandler(id, oldPassword, newPassword, username) {
+  
+  let user;
+  if (id) user = await userService.getUserById(id);
+  else if (username) user = await userService.getUserByUserName(username)
+  // console.log(user)
   if (!user) {
     throw "user is not found";
   }
 
   const pass = bcryptjs.compareSync(oldPassword, user.password);
-
   if (!pass) {
     throw "password incorrect";
   }
