@@ -21,5 +21,5 @@ module.exports = {
   getDeposit,
   getDepositById,
   updateDeposit,
-  updateDepositById,
+  updateDepositById
 };

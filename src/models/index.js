@@ -24,5 +24,5 @@ module.exports = {
   Company,
   Transaction,
   Deposit,
-  PaymentInfo,
+  PaymentInfo
 };

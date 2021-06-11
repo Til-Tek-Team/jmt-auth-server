@@ -5,7 +5,7 @@ function createUser(user) {
   return User.create(user).catch((err) => console.log(err));
 }
 function createUserTr(user, transaction) {
-  return User.create(user, { transaction })
+  return User.create(user, { transaction });
 }
 
 function getUserByEmail(email) {
@@ -26,14 +26,12 @@ function getUserById(id) {
 }
 
 function getApplicationUserById(id) {
-  return ApplicationUser.findOne({ where: { id } }).catch((err) =>
-    console.log(err)
-  );
+  return ApplicationUser.findOne({ where: { id } }).catch((err) => console.log(err));
 }
 function getApplicationUserByUserId(id) {
   return ApplicationUser.findOne({
     where: { userId: id },
-    include: { model: Company },
+    include: { model: Company }
   }).catch((err) => console.log(err));
 }
 
@@ -42,13 +40,7 @@ function updateUser(user, data) {
   return user.update(data).catch((err) => console.log(err));
 }
 
-function addApplicationUser(
-  UserId,
-  applicationApplicationId,
-  role,
-  verified = "0",
-  CompanyId
-) {
+function addApplicationUser(UserId, applicationApplicationId, role, verified = "0", CompanyId) {
   // console.log(UserId, applicationApplicationId, role);
   return ApplicationUser.create({
     UserId,
@@ -59,14 +51,12 @@ function addApplicationUser(
   }).catch((err) => console.log(err));
 }
 function addApplicationUserTr(body, transaction) {
-  return ApplicationUser.create(body, { transaction })
+  return ApplicationUser.create(body, { transaction });
 }
 
 function updateApplicationUser(UserId) {
   return sequelize
-    .query(
-      `UPDATE application_users SET verified = true WHERE UserId = '${UserId}'`
-    )
+    .query(`UPDATE application_users SET verified = true WHERE UserId = '${UserId}'`)
     .catch((err) => console.log(err));
 }
 
@@ -100,15 +90,11 @@ function getUnverifiedUserByDateOnly(startDate, endDate) {
 }
 
 function deleteUserById(id) {
-  return User.destroy({ where: { id } }).catch(err =>
-    console.log(err)
-  );
+  return User.destroy({ where: { id } }).catch((err) => console.log(err));
 }
 
 function deleteApplicationUserById(id) {
-  return ApplicationUser.destroy({ where: { UserId: id } }).catch(err =>
-    console.log(err)
-  );
+  return ApplicationUser.destroy({ where: { UserId: id } }).catch((err) => console.log(err));
 }
 
 function addCompany(company) {
@@ -133,5 +119,5 @@ module.exports = {
   deleteApplicationUserById,
   deleteUserById,
   addCompany,
-  updateUserToDeleted,
+  updateUserToDeleted
 };

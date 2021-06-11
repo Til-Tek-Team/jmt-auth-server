@@ -4,7 +4,6 @@ const userService = require("../services/user.service");
 const depositService = require("../services/deposit.service");
 const transactionService = require("../services/transaction.service");
 
-
 function createPaymentInfo(req, res, next) {
   const paymentInfo = req.body;
   let valid = validatePaymentInfo(paymentInfo);
@@ -78,12 +77,11 @@ async function createPaymentInfoHandler(paymentInfo) {
     companyId: appUser.CompanyId ? appUser.CompanyId : appUser.UserId,
     userId: user.id,
     createdAt: new Date(),
-    updatedAt: new Date(),
+    updatedAt: new Date()
   });
   if (!dbPaymentInfo) return "server error";
   return dbPaymentInfo;
 }
-
 
 //deposit
 function deposit(req, res, next) {
@@ -103,7 +101,7 @@ async function depositHandler(body) {
       deposit: body.amount,
       companyId: paymentInfo.companyId,
       userId: paymentInfo.userId,
-      paymentInfoId: paymentInfo.id,
+      paymentInfoId: paymentInfo.id
     });
     if (deposit) {
       return deposit;
@@ -149,7 +147,7 @@ async function buyVideoTransactionHandler(body) {
 
   const trans = await transactionService.addTransaction({
     amount: -body.amount,
-    companyId: appUser.CompanyId,
+    companyId: appUser.CompanyId
   });
 
   if (!trans) throw "invalid request";
@@ -162,7 +160,7 @@ async function transactionsHandler(body) {
     const trans = await transactionService.addTransaction({
       amount: body.amount,
       companyId: paymentInfo.companyId,
-      paymentInfoId: paymentInfo.id,
+      paymentInfoId: paymentInfo.id
     });
     if (trans) {
       return trans;
@@ -201,5 +199,5 @@ module.exports = {
   getUserPaymentInfos,
   getPaymentInfo,
   balance,
-  buyVideoTransaction,
+  buyVideoTransaction
 };

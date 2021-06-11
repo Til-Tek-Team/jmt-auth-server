@@ -9,61 +9,61 @@ module.exports = function (sequelize, DataTypes) {
         primaryKey: true,
         type: DataTypes.UUID,
         allowNull: false,
-        defaultValue: DataTypes.UUIDV4,
+        defaultValue: DataTypes.UUIDV4
       },
       username: {
         type: DataTypes.STRING(255),
-        allowNull: false,
+        allowNull: false
       },
       phoneNumber: {
         type: DataTypes.STRING(255),
-        allowNull: false,
+        allowNull: false
       },
       password: {
         type: DataTypes.STRING(255),
-        allowNull: true,
+        allowNull: true
       },
       email: {
         type: DataTypes.STRING(255),
-        allowNull: false,
+        allowNull: false
       },
       firstName: {
         type: DataTypes.STRING(255),
-        allowNull: true,
+        allowNull: true
       },
       lastName: {
         type: DataTypes.STRING(255),
-        allowNull: true,
+        allowNull: true
       },
       lastLoggedIn: {
         type: DataTypes.DATE,
-        allowNull: true,
+        allowNull: true
       },
       emailVerified: {
         type: DataTypes.INTEGER(1),
         allowNull: true,
-        defaultValue: "0",
+        defaultValue: "0"
       },
       createdAt: {
         type: DataTypes.DATE,
-        allowNull: false,
+        allowNull: false
       },
       updatedAt: {
         type: DataTypes.DATE,
-        allowNull: false,
+        allowNull: false
       },
       socialId: {
         type: DataTypes.STRING(255),
-        allowNull: true,
+        allowNull: true
       },
       deleted: {
         type: DataTypes.BOOLEAN,
         allowNull: false,
-        defaultValue: 0,
-      },
+        defaultValue: 0
+      }
     },
     {
-      tableName: "users",
+      tableName: "users"
     }
   );
   user.beforeCreate((u, options) => {

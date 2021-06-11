@@ -25,12 +25,12 @@ module.exports = function (sequelize, DataTypes) {
       createdAt: {
         type: DataTypes.DATE,
         allowNull: false,
-        defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
+        defaultValue: sequelize.literal("CURRENT_TIMESTAMP")
       },
       updatedAt: {
         type: DataTypes.DATE,
         allowNull: false,
-        defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
+        defaultValue: sequelize.literal("CURRENT_TIMESTAMP")
       },
       applicationApplicationId: {
         type: DataTypes.STRING(255),

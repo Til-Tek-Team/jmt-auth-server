@@ -8,71 +8,71 @@ module.exports = function (sequelize, DataTypes) {
         primaryKey: true,
         type: DataTypes.UUID,
         allowNull: false,
-        defaultValue: DataTypes.UUIDV4,
+        defaultValue: DataTypes.UUIDV4
       },
       firstName: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: false
       },
       lastName: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: false
       },
       address: {
         type: DataTypes.STRING,
-        allowNull: true,
+        allowNull: true
       },
       city: {
         type: DataTypes.STRING,
-        allowNull: true,
+        allowNull: true
       },
       state: {
         type: DataTypes.STRING,
-        allowNull: true,
+        allowNull: true
       },
       zipCode: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: false
       },
       cardType: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: false
       },
       expDate: {
         type: DataTypes.STRING,
-        allowNull: true,
+        allowNull: true
       },
       cardNumber: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: false
       },
       securityCode: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: false
       },
       companyId: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: false
       },
       userId: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: false
       },
       cvc: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: false
       },
       createdAt: {
         allowNull: false,
-        type: DataTypes.DATE,
+        type: DataTypes.DATE
       },
       updatedAt: {
         allowNull: false,
-        type: DataTypes.DATE,
-      },
+        type: DataTypes.DATE
+      }
     },
     {
-      tableName: "payment_infos",
+      tableName: "payment_infos"
     }
   );
 };

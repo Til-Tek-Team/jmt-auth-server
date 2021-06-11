@@ -21,5 +21,5 @@ module.exports = {
   getTransactions,
   getTransactionById,
   updateTransaction,
-  updateTransactionById,
+  updateTransactionById
 };

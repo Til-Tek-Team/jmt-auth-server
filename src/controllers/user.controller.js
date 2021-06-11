@@ -94,9 +94,7 @@ function getUnverifiedUserDate(req, res, next) {
     .then((user) =>
       user
         ? res.status(200).json({ success: true, user })
-        : res
-          .status(200)
-          .json({ success: false, error: "Somethin went wrong " })
+        : res.status(200).json({ success: false, error: "Somethin went wrong " })
     )
     .catch((err) => next("Internal Server Error! Try again"));
 }
@@ -118,9 +116,7 @@ function changePasswordRequest(req, res, next) {
   }
 
   changePasswordRequestHundler(userId)
-    .then((changePasswordToken) =>
-      res.status(200).json({ success: true, changePasswordToken })
-    )
+    .then((changePasswordToken) => res.status(200).json({ success: true, changePasswordToken }))
     .catch((err) => next(err));
 }
 
@@ -132,9 +128,7 @@ function changePassword(req, res, next) {
   }
 
   if (password !== confirmPassword) {
-    res
-      .status(200)
-      .json({ success: false, error: "passwords should be the same" });
+    res.status(200).json({ success: false, error: "passwords should be the same" });
     return;
   }
 
@@ -166,23 +160,9 @@ function getUserByUsername(req, res, next) {
 }
 
 function socialSignup(req, res, next) {
-  let {
-    email,
-    firstName,
-    lastName,
-    phoneNumber,
-    socialId,
-    APPLICATION,
-    role,
-  } = req.body;
+  let { email, firstName, lastName, phoneNumber, socialId, APPLICATION, role } = req.body;
 
-  if (
-    !email ||
-    phoneNumber == undefined ||
-    !socialId ||
-    !APPLICATION ||
-    !role
-  ) {
+  if (!email || phoneNumber == undefined || !socialId || !APPLICATION || !role) {
     return res.status(200).json({ success: false, error: "invalid request" });
   }
 
@@ -193,7 +173,7 @@ function socialSignup(req, res, next) {
     phoneNumber,
     socialId,
     APPLICATION,
-    role,
+    role
   })
     .then((user) => res.status(200).json({ success: true, user }))
     .catch((err) => next(err));
@@ -310,9 +290,7 @@ async function createNewApplicationUserHandler(user) {
 
 function deleteUserByUserName(req, res, next) {
   deleteUserByUserNameHandler(req.params.username)
-    .then((success) =>
-      res.status(200).json({ success, username: req.params.username })
-    )
+    .then((success) => res.status(200).json({ success, username: req.params.username }))
     .catch((err) => next(err));
 }
 
@@ -339,22 +317,14 @@ async function loginHandler(email, password) {
     throw "email or password incorrect";
   }
 
-  let updatedUser = _.omit(user.dataValues, [
-    "password",
-    "createdAt",
-    "updatedAt",
-  ]);
+  let updatedUser = _.omit(user.dataValues, ["password", "createdAt", "updatedAt"]);
   return updatedUser;
 }
 
 async function applicationUserHandler({ userId, application, role }) {
   // console.log(userId, application, role);
   if (userId && application && role) {
-    const applicationUser = await userService.addApplicationUser(
-      userId,
-      application,
-      role
-    );
+    const applicationUser = await userService.addApplicationUser(userId, application, role);
     if (!applicationUser) {
       throw "something went wrong";
     }
@@ -370,22 +340,23 @@ async function signUpHandler(user) {
   if (!checkedUser.isUnique) {
     return { ...checkedUser, success: false };
   }
-  console.log(user)
-  if (
-    !["MSP", "TALGUU", 'JOBDOR'].includes(user.APPLICATION)
-  ) {
-    throw "Invalid application name"
+  console.log(user);
+  if (!["MSP", "TALGUU", "JOBDOR"].includes(user.APPLICATION)) {
+    throw "Invalid application name";
   }
   const t = await sequelize.transaction();
   try {
     let createdUser = await userService.createUserTr(user, t);
     const token = jwt.sign({ sub: createdUser.id }, CONSTANTS.JWTEMAILSECRET);
     await tokenService.createTokenTr({ token }, t);
-    await userService.addApplicationUserTr({
-      UserId: createdUser.id,
-      applicationApplicationId: user.APPLICATION,
-      role: user.role
-    }, t);
+    await userService.addApplicationUserTr(
+      {
+        UserId: createdUser.id,
+        applicationApplicationId: user.APPLICATION,
+        role: user.role
+      },
+      t
+    );
     let updatedUser = _.omit(createdUser.dataValues, ["password"]);
     await t.commit();
     return { ...updatedUser, success: true, emailVerificationToken: token };
@@ -419,7 +390,7 @@ async function resendEmailHandler(email) {
     throw "something went wrong";
   }
   const updateUser = await userService.updateUser(user, {
-    updatedAt: Sequelize.fn("NOW"),
+    updatedAt: Sequelize.fn("NOW")
   });
   user.dataValues["emailVerificationToken"] = token;
 
@@ -427,10 +398,7 @@ async function resendEmailHandler(email) {
 }
 
 async function getUnverifiedUserByDateOnly(startDate, endDate) {
-  const users = await userService.getUnverifiedUserByDateOnly(
-    startDate,
-    endDate
-  );
+  const users = await userService.getUnverifiedUserByDateOnly(startDate, endDate);
 
   let user = users.map((items) => {
     const token = jwt.sign({ sub: items.id }, CONSTANTS.JWTEMAILSECRET);
@@ -452,10 +420,7 @@ async function getUnverifiedUserByDate(startDate, endDate, offset, limit) {
     parseInt(limit) || 8
   );
   if (users) {
-    const countUsers = await userService.countUnverifiedUser(
-      startDate,
-      endDate
-    );
+    const countUsers = await userService.countUnverifiedUser(startDate, endDate);
     let total = Object.values(countUsers[0])[0];
     return { users, total };
   }
@@ -524,7 +489,7 @@ async function changePasswordHandler(userId, password) {
 
   const updatedUser = await userService.updateUser(user, {
     password: bcryptjs.hashSync(password, 10),
-    emailVerified: true,
+    emailVerified: true
   });
 
   if (!updatedUser) {
@@ -549,7 +514,7 @@ async function getUserHandler(email) {
     role: application.role,
     firstName: temp.firstName,
     lastName: temp.lastName,
-    applicationName: application.applicationApplicationId,
+    applicationName: application.applicationApplicationId
   };
 }
 
@@ -569,6 +534,9 @@ async function getByUsernameHandler(username) {
     company["industryType"] = c.industryType;
   }
   let temp = user.dataValues;
+  const token = jwt.sign({ sub: temp.id }, CONSTANTS.JWTEMAILSECRET);
+  const dbToken = await tokenService.createToken({ token });
+  // console.log(dbToken);
   return {
     id: temp.id,
     username: temp.username,
@@ -578,7 +546,8 @@ async function getByUsernameHandler(username) {
     lastName: temp.lastName,
     applicationName: application.applicationApplicationId,
     phoneNumber: temp.phoneNumber,
-    ...company,
+    emailVerificationToken: token,
+    ...company
   };
 }
 
@@ -591,22 +560,23 @@ async function socialSignupHandler(user) {
   const t = await sequelize.transaction();
   try {
     const createdUser = await userService.createUserTr({ ...user }, t);
-    const applicationUser = await userService.addApplicationUserTr({
-      UserId: createdUser.id,
-      applicationApplicationId: user.APPLICATION,
-      role: user.role
-    }, t);
+    const applicationUser = await userService.addApplicationUserTr(
+      {
+        UserId: createdUser.id,
+        applicationApplicationId: user.APPLICATION,
+        role: user.role
+      },
+      t
+    );
 
     let updatedUser = _.omit(createdUser.dataValues, ["password"]);
 
     await t.commit();
     return updatedUser;
-
   } catch (err) {
     await t.rollback();
     throw err;
   }
-
 }
 
 async function socialLoginHandler({ email }) {
@@ -631,10 +601,9 @@ async function getUserByEmailHandler(email) {
 }
 
 async function updatePasswordHandler(id, oldPassword, newPassword, username) {
-  
   let user;
   if (id) user = await userService.getUserById(id);
-  else if (username) user = await userService.getUserByUserName(username)
+  else if (username) user = await userService.getUserByUserName(username);
   // console.log(user)
   if (!user) {
     throw "user is not found";
@@ -646,7 +615,7 @@ async function updatePasswordHandler(id, oldPassword, newPassword, username) {
   }
 
   const updatedUser = await userService.updateUser(user, {
-    password: bcryptjs.hashSync(newPassword, 10),
+    password: bcryptjs.hashSync(newPassword, 10)
   });
   if (!updatedUser) {
     throw "something went wrong";
@@ -676,7 +645,7 @@ async function checkUsernameUnique(username) {
       role: application.role,
       firstName: temp.firstName,
       lastName: temp.lastName,
-      applicationName: application.applicationApplicationId,
+      applicationName: application.applicationApplicationId
     };
   }
 
@@ -690,7 +659,7 @@ async function setPasswordHandler(email, password) {
   }
 
   const updatedUser = await userService.updateUser(user, {
-    password: bcryptjs.hashSync(password, 10),
+    password: bcryptjs.hashSync(password, 10)
   });
   if (!updatedUser) {
     throw "something went wrong";
@@ -726,17 +695,20 @@ async function addCompanyProfileHandler(company) {
   const t = await sequelize.transaction();
   try {
     const addCompany = await paymentService.addCompanyTr(company, t);
-    const updatedUser = await paymentService.updateApplicationUserTr(appUser, {
-      ...appUser.dataValues,
-      CompanyId: company.id,
-    }, t);
+    const updatedUser = await paymentService.updateApplicationUserTr(
+      appUser,
+      {
+        ...appUser.dataValues,
+        CompanyId: company.id
+      },
+      t
+    );
     await t.commit();
     return addCompany;
   } catch (err) {
     await t.rollback();
     throw err;
   }
-
 }
 
 async function checkUsernameHandler(username) {
@@ -806,5 +778,5 @@ module.exports = {
   getUnverifiedUserDate,
   createNewApplicationUser,
   deleteUser,
-  deleteUserByUserName,
+  deleteUserByUserName
 };

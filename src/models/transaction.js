@@ -8,43 +8,43 @@ module.exports = function (sequelize, DataTypes) {
         primaryKey: true,
         type: DataTypes.UUID,
         allowNull: false,
-        defaultValue: DataTypes.UUIDV4,
+        defaultValue: DataTypes.UUIDV4
       },
       amount: {
         type: DataTypes.DOUBLE,
-        allowNull: false,
+        allowNull: false
       },
       companyId: {
         type: DataTypes.UUID,
         references: {
           model: "companies",
-          key: "id",
+          key: "id"
         },
         onUpdate: "CASCADE",
         onDelete: "SET NULL",
-        constraints: false,
+        constraints: false
       },
       paymentInfoId: {
         type: DataTypes.UUID,
         references: {
           model: "payment_infos",
-          key: "id",
+          key: "id"
         },
         onUpdate: "CASCADE",
         onDelete: "SET NULL",
-        constraints: false,
+        constraints: false
       },
       createdAt: {
         allowNull: false,
-        type: DataTypes.DATE,
+        type: DataTypes.DATE
       },
       updatedAt: {
         allowNull: false,
-        type: DataTypes.DATE,
-      },
+        type: DataTypes.DATE
+      }
     },
     {
-      tableName: "transactions",
+      tableName: "transactions"
     }
   );
 };

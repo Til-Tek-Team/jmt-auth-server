@@ -11,4 +11,3 @@ app.post("/deposit", paymentController.deposit);
 app.post("/transaction", paymentController.addTransactions);
 app.post("/buy_video", paymentController.buyVideoTransaction);
 app.get("/balance/:username", paymentController.balance);
-

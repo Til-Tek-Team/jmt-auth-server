@@ -70,7 +70,7 @@ function validatePaymentInfo(data) {
     "cardNumber",
     "cvc",
     "expDate",
-    "cardType",
+    "cardType"
   ];
   const keys = _.keys(data);
   fields.map((field) => {
@@ -100,5 +100,5 @@ function validatePaymentInfo(data) {
 module.exports = {
   validateUser,
   validatePlanType,
-  validatePaymentInfo,
+  validatePaymentInfo
 };
