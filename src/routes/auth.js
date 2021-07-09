@@ -9,6 +9,7 @@ app.post("/social_login", userController.socialLogin);
 app.post("/social_signup", userController.socialSignup);
 
 app.get("/user_name/:username", userController.getUserByUsername);
+app.put("/code_verified/:username", userController.updateCodeVerified);
 app.get("/users/:email", userController.getUser);
 app.post("/resend_email", userController.resendEmail);
 app.post("/application_user", userController.createApplicationUser);

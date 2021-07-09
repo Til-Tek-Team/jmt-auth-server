@@ -159,6 +159,17 @@ function getUserByUsername(req, res, next) {
     .catch((err) => next(err));
 }
 
+function updateCodeVerified(req, res, next) {
+  const username = req.params.username;
+  if (!username) {
+    return res.status(200).json({ success: false, error: "invalid request" });
+  }
+
+  updateCodeVerifiedHandler(username)
+    .then((user) => res.status(200).json({ success: true, user }))
+    .catch((err) => next(err));
+}
+
 function socialSignup(req, res, next) {
   let { email, firstName, lastName, phoneNumber, socialId, APPLICATION, role } = req.body;
 
@@ -302,13 +313,18 @@ async function loginHandler(email, password) {
   let userCreated = moment(user.updatedAt);
   let curreTime = moment(Date.now());
 
+  console.log(user);
   const difference = curreTime.diff(userCreated, "minutes");
-  if (!user.emailVerified && parseInt(difference) > 15) {
+  if ((!user.emailVerified || !user.codeVerified) && parseInt(difference) > 15) {
     throw "Check your confirmation email first";
   }
 
   if (!user.emailVerified) {
     throw "Verify your email to proceed";
+  }
+
+  if (!user.codeVerified) {
+    throw "Verify your phone number to proceed";
   }
 
   const pass = bcryptjs.compareSync(password, user.password);
@@ -516,6 +532,16 @@ async function getUserHandler(email) {
     lastName: temp.lastName,
     applicationName: application.applicationApplicationId
   };
+}
+
+async function updateCodeVerifiedHandler(username) {
+  let user = await userService.getUserByUserName(username);
+
+  if (!user) {
+    throw "user does not exist";
+  }
+
+  return userService.updateUser(user, { codeVerified: 1 });
 }
 
 async function getByUsernameHandler(username) {
@@ -764,6 +790,7 @@ module.exports = {
   changePassword,
   getUser,
   getUserByUsername,
+  updateCodeVerified,
   resendEmail,
   createApplicationUser,
   socialSignup,
