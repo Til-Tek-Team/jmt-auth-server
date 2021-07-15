@@ -23,6 +23,11 @@ module.exports = function (sequelize, DataTypes) {
         type: DataTypes.STRING(255),
         allowNull: true
       },
+      prevPassword: {
+        type: DataTypes.STRING(255),
+        allowNull: true,
+        defaultValue: null
+      },
       email: {
         type: DataTypes.STRING(255),
         allowNull: false

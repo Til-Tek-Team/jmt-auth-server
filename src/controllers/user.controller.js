@@ -137,6 +137,38 @@ function changePassword(req, res, next) {
     .catch((err) => next(err));
 }
 
+function changeUserPassword(req, res, next) {
+  let { password, confirmPassword, username } = req.body;
+  if (!password || !confirmPassword || !username) {
+    res.status(200).json({ success: false, error: "invalid request" });
+    return;
+  }
+
+  if (password !== confirmPassword) {
+    res.status(200).json({ success: false, error: "passwords should be the same" });
+    return;
+  }
+
+  changeUserPasswordHandler(username, password)
+    .then(() => res.status(200).json({ success: true }))
+    .catch((err) => next(err));
+}
+
+function revertUserPassword(req, res, next) {
+  let { username } = req.body;
+  if (!username) {
+    res.status(200).json({ success: false, error: "invalid request" });
+    return;
+  }
+
+  revertUserPasswordHandler(username)
+    .then(() => res.status(200).json({ success: true }))
+    .catch((err) => {
+      console.log(err);
+      next(err);
+    });
+}
+
 function getUser(req, res, next) {
   let email = req.params.email;
   if (!email) {
@@ -515,6 +547,45 @@ async function changePasswordHandler(userId, password) {
   return true;
 }
 
+async function changeUserPasswordHandler(username, password) {
+  const user = await userService.getUserByUserName(username);
+
+  if (!user) {
+    throw "user does not exist";
+  }
+
+  const updatedUser = await userService.updateUser(user, {
+    password: bcryptjs.hashSync(password, 10),
+    prevPassword: user.prevPassword ? user.prevPassword : user.password,
+    emailVerified: true
+  });
+
+  if (!updatedUser) {
+    throw "something went wrong";
+  }
+
+  return true;
+}
+
+async function revertUserPasswordHandler(username) {
+  const user = await userService.getUserByUserName(username);
+
+  if (!user) {
+    throw "user does not exist";
+  }
+
+  const updatedUser = await userService.updateUser(user, {
+    password: user.prevPassword ? user.prevPassword : user.password,
+    prevPassword: null
+  });
+
+  if (!updatedUser) {
+    throw "something went wrong";
+  }
+
+  return true;
+}
+
 async function getUserHandler(email) {
   let user = await userService.getUserByEmail(email);
 
@@ -788,6 +859,8 @@ module.exports = {
   verifyEmail,
   changePasswordRequest,
   changePassword,
+  changeUserPassword,
+  revertUserPassword,
   getUser,
   getUserByUsername,
   updateCodeVerified,
