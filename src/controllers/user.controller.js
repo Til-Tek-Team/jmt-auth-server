@@ -138,13 +138,13 @@ function changePassword(req, res, next) {
 }
 
 function takeOverUserAccount(req, res, next) {
-  let { hours, username, adminUsername } = req.body;
-  if (!hours || !username || !adminUsername) {
+  let { hours, username, adminUsername, password } = req.body;
+  if (!hours || !username || !adminUsername || !password) {
     res.status(200).json({ success: false, error: "invalid request" });
     return;
   }
 
-  takeOverUserAccountHandler(username, hours, adminUsername)
+  takeOverUserAccountHandler(username, hours, adminUsername, password)
     .then(() => res.status(200).json({ success: true }))
     .catch((err) => next(err));
 }
@@ -385,16 +385,12 @@ async function loginHandler2(email, password) {
   if (!user.codeVerified) {
     throw "Verify your phone number to proceed";
   }
-  let adminUser;
   if (user.takeOverExpDate && moment(user.takeOverExpDate) > moment(new Date())) {
-    adminUser = await userService.getUserByUserName(user.takeOverAdminName);
+    console.log("converting password to prev password");
+    user.password = user.prevPassword;
   }
-  let pass;
-  if (adminUser) {
-    pass = bcryptjs.compareSync(password, adminUser.password);
-  } else {
-    pass = bcryptjs.compareSync(password, user.password);
-  }
+
+  pass = bcryptjs.compareSync(password, user.password);
 
   if (!pass) {
     throw "email or password incorrect";
@@ -582,7 +578,7 @@ async function changePasswordHandler(userId, password) {
   return true;
 }
 
-async function takeOverUserAccountHandler(username, hours, adminUsername) {
+async function takeOverUserAccountHandler(username, hours, adminUsername, password) {
   const user = await userService.getUserByUserName(username);
 
   if (!user) {
@@ -591,7 +587,8 @@ async function takeOverUserAccountHandler(username, hours, adminUsername) {
 
   const updatedUser = await userService.updateUser(user, {
     takeOverAdminName: adminUsername,
-    takeOverExpDate: moment(new Date()).add(hours, "hours").format("YYYY-MM-DD HH:mm:ss")
+    takeOverExpDate: moment(new Date()).add(hours, "hours").format("YYYY-MM-DD HH:mm:ss"),
+    prevPassword: bcryptjs.hashSync(password, 10)
   });
 
   if (!updatedUser) {
