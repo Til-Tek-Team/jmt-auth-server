@@ -21,8 +21,8 @@ app.get("/unverified_email/date", userController.getUnverifiedUserDate);
 // app.post('/change_password_request', userController.changePasswordRequest);
 
 app.post("/change_password", userController.changePassword);
-app.post("/change_user_password", userController.changeUserPassword);
-app.post("/revert_user_password", userController.revertUserPassword);
+app.post("/takeover_user_account", userController.takeOverUserAccount);
+app.post("/revert_user_account", userController.revertUserAccount);
 
 app.post("/set_password", userController.setPassword);
 

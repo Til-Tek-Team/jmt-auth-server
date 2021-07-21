@@ -70,6 +70,14 @@ module.exports = function (sequelize, DataTypes) {
         type: DataTypes.BOOLEAN,
         allowNull: false,
         defaultValue: 0
+      },
+      takeOverExpDate: {
+        type: DataTypes.DATE,
+        allowNull: false
+      },
+      takeOverAdminName: {
+        type: DataTypes.STRING,
+        allowNull: true
       }
     },
     {

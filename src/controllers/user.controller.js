@@ -17,7 +17,7 @@ function login(req, res, next) {
     return;
   }
 
-  loginHandler(email, password)
+  loginHandler2(email, password)
     .then((user) => res.status(200).json({ success: true, user }))
     .catch((err) => next(err));
 }
@@ -137,31 +137,26 @@ function changePassword(req, res, next) {
     .catch((err) => next(err));
 }
 
-function changeUserPassword(req, res, next) {
-  let { password, confirmPassword, username } = req.body;
-  if (!password || !confirmPassword || !username) {
+function takeOverUserAccount(req, res, next) {
+  let { hours, username, adminUsername } = req.body;
+  if (!hours || !username || !adminUsername) {
     res.status(200).json({ success: false, error: "invalid request" });
     return;
   }
 
-  if (password !== confirmPassword) {
-    res.status(200).json({ success: false, error: "passwords should be the same" });
-    return;
-  }
-
-  changeUserPasswordHandler(username, password)
+  takeOverUserAccountHandler(username, hours, adminUsername)
     .then(() => res.status(200).json({ success: true }))
     .catch((err) => next(err));
 }
 
-function revertUserPassword(req, res, next) {
+function revertUserAccount(req, res, next) {
   let { username } = req.body;
   if (!username) {
     res.status(200).json({ success: false, error: "invalid request" });
     return;
   }
 
-  revertUserPasswordHandler(username)
+  revertUserAccountHandler(username)
     .then(() => res.status(200).json({ success: true }))
     .catch((err) => {
       console.log(err);
@@ -369,6 +364,46 @@ async function loginHandler(email, password) {
   return updatedUser;
 }
 
+async function loginHandler2(email, password) {
+  let user = await userService.getUserByUserName(email);
+  if (!user) {
+    throw "Email or Password incorrect";
+  }
+  let userCreated = moment(user.updatedAt);
+  let curreTime = moment(Date.now());
+
+  // console.log(user);
+  const difference = curreTime.diff(userCreated, "minutes");
+  if ((!user.emailVerified || !user.codeVerified) && parseInt(difference) > 15) {
+    throw "Check your confirmation email first";
+  }
+
+  if (!user.emailVerified) {
+    throw "Verify your email to proceed";
+  }
+
+  if (!user.codeVerified) {
+    throw "Verify your phone number to proceed";
+  }
+  let adminUser;
+  if (user.takeOverExpDate && moment(user.takeOverExpDate) > moment(new Date())) {
+    adminUser = await userService.getUserByUserName(user.takeOverAdminName);
+  }
+  let pass;
+  if (adminUser) {
+    pass = bcryptjs.compareSync(password, adminUser.password);
+  } else {
+    pass = bcryptjs.compareSync(password, user.password);
+  }
+
+  if (!pass) {
+    throw "email or password incorrect";
+  }
+
+  let updatedUser = _.omit(user.dataValues, ["password", "createdAt", "updatedAt"]);
+  return updatedUser;
+}
+
 async function applicationUserHandler({ userId, application, role }) {
   // console.log(userId, application, role);
   if (userId && application && role) {
@@ -547,7 +582,7 @@ async function changePasswordHandler(userId, password) {
   return true;
 }
 
-async function changeUserPasswordHandler(username, password) {
+async function takeOverUserAccountHandler(username, hours, adminUsername) {
   const user = await userService.getUserByUserName(username);
 
   if (!user) {
@@ -555,9 +590,8 @@ async function changeUserPasswordHandler(username, password) {
   }
 
   const updatedUser = await userService.updateUser(user, {
-    password: bcryptjs.hashSync(password, 10),
-    prevPassword: user.prevPassword ? user.prevPassword : user.password,
-    emailVerified: true
+    takeOverAdminName: adminUsername,
+    takeOverExpDate: moment(new Date()).add(hours, "hours").format("YYYY-MM-DD HH:mm:ss")
   });
 
   if (!updatedUser) {
@@ -567,7 +601,7 @@ async function changeUserPasswordHandler(username, password) {
   return true;
 }
 
-async function revertUserPasswordHandler(username) {
+async function revertUserAccountHandler(username) {
   const user = await userService.getUserByUserName(username);
 
   if (!user) {
@@ -575,8 +609,8 @@ async function revertUserPasswordHandler(username) {
   }
 
   const updatedUser = await userService.updateUser(user, {
-    password: user.prevPassword ? user.prevPassword : user.password,
-    prevPassword: null
+    takeOverAdminName: null,
+    takeOverExpDate: moment(new Date()).subtract(24, "hours").format("YYYY-MM-DD HH:mm:ss")
   });
 
   if (!updatedUser) {
@@ -859,8 +893,8 @@ module.exports = {
   verifyEmail,
   changePasswordRequest,
   changePassword,
-  changeUserPassword,
-  revertUserPassword,
+  takeOverUserAccount,
+  revertUserAccount,
   getUser,
   getUserByUsername,
   updateCodeVerified,
