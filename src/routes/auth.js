@@ -3,6 +3,7 @@ const app = (module.exports = require("express")());
 const userController = require("../controllers/user.controller");
 
 app.post("/login", userController.login);
+app.post("/login_temp", userController.loginTemp);
 app.post("/signup", userController.signUp);
 
 app.post("/social_login", userController.socialLogin);

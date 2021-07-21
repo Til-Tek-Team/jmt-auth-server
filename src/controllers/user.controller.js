@@ -17,6 +17,18 @@ function login(req, res, next) {
     return;
   }
 
+  loginHandler(email, password)
+    .then((user) => res.status(200).json({ success: true, user }))
+    .catch((err) => next(err));
+}
+
+function loginTemp(req, res, next) {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    res.status(200).json({ success: false, error: "invalid request" });
+    return;
+  }
+
   loginHandler2(email, password)
     .then((user) => res.status(200).json({ success: true, user }))
     .catch((err) => next(err));
@@ -885,6 +897,7 @@ async function deleteUserByUserNameHandler(username) {
 
 module.exports = {
   login,
+  loginTemp,
   signUp,
   verifyToken,
   verifyEmail,
