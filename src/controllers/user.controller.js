@@ -31,7 +31,9 @@ function loginTemp(req, res, next) {
 
   loginHandler2(email, password)
     .then((user) => res.status(200).json({ success: true, user }))
-    .catch((err) => next(err));
+    .catch((err) => {
+      next(err);
+    });
 }
 
 function signUp(req, res, next) {
@@ -352,7 +354,7 @@ async function loginHandler(email, password) {
   let userCreated = moment(user.updatedAt);
   let curreTime = moment(Date.now());
 
-  console.log(user);
+  // console.log(user);
   const difference = curreTime.diff(userCreated, "minutes");
   if ((!user.emailVerified || !user.codeVerified) && parseInt(difference) > 15) {
     throw "Check your confirmation email first";
@@ -397,19 +399,33 @@ async function loginHandler2(email, password) {
   if (!user.codeVerified) {
     throw "Verify your phone number to proceed";
   }
+
+  let prevPass;
   if (user.takeOverExpDate && moment(user.takeOverExpDate) > moment(new Date())) {
-    console.log("converting password to prev password");
-    user.password = user.prevPassword;
+    prevPass = bcryptjs.compareSync(password, user.prevPassword);
   }
 
-  pass = bcryptjs.compareSync(password, user.password);
+  let pass;
 
-  if (!pass) {
-    throw "email or password incorrect";
+  if (user.takeOverExpDate && moment(user.takeOverExpDate) > moment(new Date())) {
+    if (prevPass) {
+      let updatedUser = _.omit(user.dataValues, ["password", "createdAt", "updatedAt"]);
+      return updatedUser;
+    } else {
+      pass = bcryptjs.compareSync(password, user.password);
+      if (pass) {
+        throw { message: "Account Overtaken", takeOverExpDate: user.takeOverExpDate };
+      }
+      throw "email or password incorrect";
+    }
+  } else {
+    pass = bcryptjs.compareSync(password, user.password);
+    if (!pass) {
+      throw "email or password incorrect";
+    }
+    let updatedUser = _.omit(user.dataValues, ["password", "createdAt", "updatedAt"]);
+    return updatedUser;
   }
-
-  let updatedUser = _.omit(user.dataValues, ["password", "createdAt", "updatedAt"]);
-  return updatedUser;
 }
 
 async function applicationUserHandler({ userId, application, role }) {

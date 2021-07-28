@@ -73,7 +73,7 @@ module.exports = function (sequelize, DataTypes) {
       },
       takeOverExpDate: {
         type: DataTypes.DATE,
-        allowNull: false
+        allowNull: true
       },
       takeOverAdminName: {
         type: DataTypes.STRING,
